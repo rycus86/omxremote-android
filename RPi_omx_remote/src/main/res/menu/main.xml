@@ -16,4 +16,8 @@
         android:icon="@drawable/ic_file_video"
         android:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/action_about"
+        android:title="@string/menu_about"
+        android:showAsAction="never"/>
+
 </menu>

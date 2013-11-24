@@ -10,6 +10,7 @@
     <string name="menu_settings">Beállítások</string>
     <string name="menu_files">Fájlok</string>
     <string name="menu_player">Lejátszó</string>
+    <string name="menu_about">Névjegy</string>
 
     <!-- Status -->
     <string name="status_current">Kapcsolat állapota</string>
@@ -32,5 +33,36 @@
     <string name="pl_finished">Lejátszás véget ért</string>
     <string name="pl_btn_sub_delay_minus">sub\n-250ms</string>
     <string name="pl_btn_sub_delay_plus">sub\n+250ms</string>
+
+    <!-- About -->
+    <!-- About -->
+    <string name="about_created_by">Készítette: Ádám Viktor.</string>
+    <string name="about_email">E-mail: rycus86@gmail.com</string>
+    <string name="about_this_project">
+        A távirányítóhoz szükséges egy Raspberry Pi módosított omxplayer lejátszóval
+        és egy Python "híd" modullal.\n
+        https://github.com/rycus86/omxplayer\n
+        https://github.com/rycus86/omxremote-py
+    </string>
+    <string name="about_rpi_disclaimer">
+        Ez a projekt semmilyen összefüggésben nem áll a Raspberry Pi alapítvánnyal,
+        de az ő nagyszerű termékükre épül.
+        Köszönjük nekik!
+        Látogasd meg honlapjukat itt:\n
+        http://www.raspberrypi.org
+    </string>
+    <string name="about_tvdb_disclaimer">
+        A projekt információkat tölt le a TheTVDB.com oldalról, hálás köszönet
+        érte, hogy elérhetővé tették. Látogasd meg őket itt:\n
+        http://thetvdb.com
+    </string>
+    <string name="about_guessit">
+        A hídként szolgáló modul használja a GuessIt Python könyvtárat, nézd meg itt:\n
+        https://pypi.python.org/pypi/guessit
+    </string>
+    <string name="about_subliminal">
+        A hídként szolgáló modul szintén használja (a jövőben) a Subliminal Python könyvtárat, nézd meg itt:\n
+        https://pypi.python.org/pypi/subliminal
+    </string>
 
 </resources>

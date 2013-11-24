@@ -16,6 +16,7 @@ import android.widget.Toast;
 import hu.rycus.rpiomxremote.blocks.FileList;
 import hu.rycus.rpiomxremote.blocks.Setting;
 import hu.rycus.rpiomxremote.manager.PlayerState;
+import hu.rycus.rpiomxremote.ui.AboutFragment;
 import hu.rycus.rpiomxremote.ui.FileListFragment;
 import hu.rycus.rpiomxremote.ui.PlayerFragment;
 import hu.rycus.rpiomxremote.ui.SettingsFragment;
@@ -137,6 +138,11 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_player:
             {
                 startPlayerActivity();
+                return true;
+            }
+            case R.id.action_about:
+            {
+                changeFragment(new AboutFragment(), FragmentTransaction.TRANSIT_FRAGMENT_OPEN, true);
                 return true;
             }
         }
