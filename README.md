@@ -31,3 +31,10 @@ video information and fetch some information from TVDB if the video is probably
 an episode of a TV show. The player can display these informations on the client,
 provides a status bar notification and lock screen controls for it (if the system
 supports this functions).
+
+Download
+--------
+
+You can download the APK from here (for now):
+
+    https://github.com/rycus86/omxremote-android/raw/master/RPi_omx_remote/RPi_omx_remote.apk
