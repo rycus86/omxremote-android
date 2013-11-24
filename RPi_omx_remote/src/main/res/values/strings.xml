@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RPi::omx Remote</string>
+    <string name="title_activity_player">RPi::omx Player</string>
+
+    <string name="error_general">Error: %s</string>
+    <string name="error_list_files">Failed to list files</string>
+
+    <string name="menu_settings">Settings</string>
+    <string name="menu_files">Files</string>
+    <string name="menu_player">Player</string>
+
+    <!-- Status -->
+    <string name="status_current">Current status</string>
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="st_browse_files">Browse files</string>
+    <string name="st_settings">Settings</string>
+
+    <!-- File list -->
+    <string name="fl_selection_header">Selected files:</string>
+    <string name="fl_selection_hint">Select files from the list</string>
+    <string name="fl_selection_no_video">No video file selected</string>
+    <string name="fl_selection_no_subtitle">No subtitle file selected</string>
+    <string name="fl_btn_start">Start</string>
+    <string name="fl_starting">Starting selected video</string>
+
+    <!-- Player -->
+    <string name="pl_volume">Volume: %d dB</string>
+    <string name="pl_menu_stop">Stop player</string>
+    <string name="pl_finished">Playback finished</string>
+    <string name="pl_btn_sub_delay_minus">sub\n-250ms</string>
+    <string name="pl_btn_sub_delay_plus">sub\n+250ms</string>
+
+</resources>

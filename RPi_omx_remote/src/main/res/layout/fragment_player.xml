@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EFEFEF">
+
+    <ImageView
+        android:id="@+id/img_player_bg"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:src="@drawable/raspberry"
+        android:scaleType="centerCrop"/>
+
+    <include
+        android:id="@+id/player_controls"
+        layout="@layout/player_controls"/>
+
+    <RelativeLayout
+        android:id="@+id/player_header"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:background="@drawable/player_header_bg">
+
+        <ImageButton
+            android:id="@+id/btn_player_back"
+            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:src="@drawable/ic_action_previous_item"
+            android:layout_alignParentLeft="true"
+            style="@style/BorderlessButton"/>
+
+        <ImageButton
+            android:id="@+id/btn_player_menu"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_action_overflow"
+            style="@style/BorderlessButton" />
+
+        <TextView
+            android:id="@+id/txt_play_title"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_toRightOf="@id/btn_player_back"
+            android:layout_toLeftOf="@id/btn_player_menu"
+            android:textStyle="bold"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/txt_play_info"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_below="@id/txt_play_title"
+            android:layout_toRightOf="@id/btn_player_back"
+            android:layout_toLeftOf="@id/btn_player_menu"
+            android:textSize="16sp"
+            android:paddingLeft="16dp"/>
+
+        <TextView
+            android:id="@+id/txt_play_extra"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_below="@id/txt_play_info"
+            android:layout_toRightOf="@id/btn_player_back"
+            android:layout_toLeftOf="@id/btn_player_menu"
+            android:textStyle="italic"
+            android:textSize="14sp"
+            android:paddingLeft="16dp"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/player_miscellaneous"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/player_header"
+        android:background="@drawable/player_misc_controls"
+        android:layout_margin="3dp"
+        android:padding="5dp">
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/player_extra_controls"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/player_header"
+        android:background="@drawable/player_hiding_controls"
+        android:layout_margin="3dp"
+        android:padding="3dp">
+
+        <!-- Needs some kind of indication of playback speed
+        <ImageButton
+            android:id="@+id/btn_play_slower"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:src="@drawable/ic_action_rewind"
+            style="@style/BorderlessButton"/>
+        <ImageButton
+            android:id="@+id/btn_play_faster"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_toRightOf="@id/btn_play_slower"
+            android:src="@drawable/ic_action_fast_forward"
+            style="@style/BorderlessButton"/>
+        -->
+
+        <!-- add button for ToggleSubtitle and maybe StopVideo -->
+
+        <Button
+            android:id="@+id/btn_play_subtitle_delay_dec"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/pl_btn_sub_delay_minus"
+            android:textSize="12sp"
+            android:textColor="#C333"
+            style="@style/BorderlessButton"/>
+
+        <Button
+            android:id="@+id/btn_play_subtitle_delay_inc"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_toRightOf="@id/btn_play_subtitle_delay_dec"
+            android:text="@string/pl_btn_sub_delay_plus"
+            android:textSize="12sp"
+            android:textColor="#C333"
+            style="@style/BorderlessButton"/>
+
+        <ImageButton
+            android:id="@+id/btn_play_jump_prev"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/btn_play_subtitle_delay_dec"
+            android:src="@drawable/ic_action_previous"
+            style="@style/BorderlessButton"/>
+
+        <ImageButton
+            android:id="@+id/btn_play_jump_next"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/btn_play_subtitle_delay_inc"
+            android:layout_toRightOf="@id/btn_play_jump_prev"
+            android:src="@drawable/ic_action_next"
+            style="@style/BorderlessButton"/>
+
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/shadow_play_time_elapsed"
+        android:translationX="-20dp"
+        android:layout_width="100dp"
+        android:layout_height="28dp"
+        android:background="@drawable/player_hiding_controls"
+        android:layout_above="@id/player_controls"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="6dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/txt_play_time_elapsed"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_above="@id/player_controls"
+        android:layout_alignParentLeft="true"
+        style="@style/TextWithShadow"
+        android:padding="10dp"/>
+
+    <View
+        android:id="@+id/shadow_play_time_length"
+        android:translationX="20dp"
+        android:layout_width="100dp"
+        android:layout_height="28dp"
+        android:background="@drawable/player_hiding_controls"
+        android:layout_above="@id/player_controls"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="6dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/txt_play_time_length"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_above="@id/player_controls"
+        android:layout_alignParentRight="true"
+        style="@style/TextWithShadow"
+        android:padding="10dp"/>
+
+    <TextView
+        android:id="@+id/txt_play_volume"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/player_controls"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        style="@style/TextWithShadow"
+        android:padding="10dp"/>
+
+</RelativeLayout>

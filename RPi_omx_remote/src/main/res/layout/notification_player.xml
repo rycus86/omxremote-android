@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E111">
+
+    <ImageView
+        android:id="@+id/notif_image"
+        android:layout_width="96dp"
+        android:layout_height="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/notif_divider_bottom"
+        android:src="@drawable/ic_launcher"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="-5dp"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/notif_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/notif_image"
+        android:layout_marginRight="5dp"
+        android:textSize="18sp"/>
+
+    <ImageView
+        android:id="@+id/notif_small_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_notification"
+        android:alpha="0.8"
+        android:layout_above="@+id/notif_divider_top"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp" />
+
+    <TextView
+        android:id="@+id/notif_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/notif_small_icon"
+        android:layout_toRightOf="@id/notif_image"
+        android:layout_below="@id/notif_title"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/notif_extra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/notif_small_icon"
+        android:layout_toRightOf="@id/notif_image"
+        android:layout_below="@id/notif_info"
+        android:textSize="14sp"
+        android:textStyle="italic"/>
+
+    <ImageView
+        android:id="@id/notif_divider_top"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/notif_extra"
+        android:layout_toRightOf="@id/notif_image"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:background="@android:drawable/divider_horizontal_dark"/>
+
+    <ImageButton
+        android:id="@+id/notif_btn_volume_up"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_notif_vol_up"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/notif_divider_top"
+        android:padding="10dp"
+        android:layout_margin="3dp"
+        style="@style/BorderlessButton"
+        />
+
+    <ImageButton
+        android:id="@+id/notif_btn_volume_down"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_notif_vol_down"
+        android:layout_toLeftOf="@id/notif_btn_volume_up"
+        android:layout_below="@id/notif_divider_top"
+        android:padding="10dp"
+        android:layout_margin="3dp"
+        style="@style/BorderlessButton"
+        />
+
+    <ImageButton
+        android:id="@+id/notif_btn_pause"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_notif_pause"
+        android:layout_toLeftOf="@id/notif_btn_volume_down"
+        android:layout_below="@id/notif_divider_top"
+        android:padding="10dp"
+        android:layout_margin="3dp"
+        style="@style/BorderlessButton"
+        />
+
+    <ImageView
+        android:id="@id/notif_divider_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/notif_btn_pause"
+        android:layout_toRightOf="@id/notif_image"
+        android:layout_marginRight="5dp"
+        android:background="@android:drawable/divider_horizontal_dark"/>
+
+</RelativeLayout>

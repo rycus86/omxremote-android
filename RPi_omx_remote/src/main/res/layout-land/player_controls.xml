@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_alignParentBottom="true"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
+    android:background="@drawable/player_footer_bg">
+
+    <ImageButton
+        android:id="@+id/btn_play_volume_up"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_action_volume_up"
+        style="@style/BorderlessButton"/>
+
+    <ImageButton
+        android:id="@+id/btn_play_volume_down"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_toLeftOf="@id/btn_play_volume_up"
+        android:src="@drawable/ic_action_volume_down"
+        style="@style/BorderlessButton"/>
+
+    <ImageButton
+        android:id="@+id/btn_play_pause"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_toLeftOf="@id/btn_play_volume_down"
+        android:src="@drawable/ic_action_pause"
+        style="@style/BorderlessButton" />
+
+    <SeekBar
+        android:id="@+id/seek_play"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_toLeftOf="@id/btn_play_pause"
+        android:layout_margin="5dp"
+        android:layout_centerVertical="true"
+        style="@style/SeekBarAppTheme" />
+
+</RelativeLayout>

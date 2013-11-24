@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BorderlessButton" parent="android:Widget.Holo.Button.Borderless">
+        <!-- Do not override anything -->
+        <item name="android:background">@drawable/flat_button_bg</item>
+    </style>
+
+    <style name="SeekBarAppTheme" parent="android:Widget.Holo.Light.SeekBar">
+        <item name="android:progressDrawable">@drawable/scrubber_progress_horizontal_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/scrubber_progress_horizontal_holo_light</item>
+        <item name="android:thumb">@drawable/scrubber_control_selector_holo_light</item>
+    </style>
+
+</resources>

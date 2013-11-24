@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RPi::omx Távirányító</string>
+    <string name="title_activity_player">RPi::omx Lejátszó</string>
+
+    <string name="error_general">Hiba: %s</string>
+    <string name="error_list_files">Nem sikerült a fájlok listázása</string>
+
+    <string name="menu_settings">Beállítások</string>
+    <string name="menu_files">Fájlok</string>
+    <string name="menu_player">Lejátszó</string>
+
+    <!-- Status -->
+    <string name="status_current">Kapcsolat állapota</string>
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="st_browse_files">Fájlok</string>
+    <string name="st_settings">Beállítások</string>
+
+    <!-- File list -->
+    <string name="fl_selection_header">Kiválasztott fájlok:</string>
+    <string name="fl_selection_hint">Válasszon fájlokat a listából</string>
+    <string name="fl_selection_no_video">Nincsen kiválasztva videó fájl</string>
+    <string name="fl_selection_no_subtitle">Nincsen kiválasztva felirat fájl</string>
+    <string name="fl_btn_start">Indítás</string>
+    <string name="fl_starting">Kiválasztott videó indítása</string>
+
+    <!-- Player -->
+    <string name="pl_volume">Hangerő: %d dB</string>
+    <string name="pl_menu_stop">Leállítás</string>
+    <string name="pl_finished">Lejátszás véget ért</string>
+    <string name="pl_btn_sub_delay_minus">sub\n-250ms</string>
+    <string name="pl_btn_sub_delay_plus">sub\n+250ms</string>
+
+</resources>
