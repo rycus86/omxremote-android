@@ -19,16 +19,28 @@ import hu.rycus.rpiomxremote.manager.RemoteManager;
 import hu.rycus.rpiomxremote.util.Header;
 
 /**
- * Created by rycus on 10/30/13.
+ * Remote service responsible for background tasks
+ * like handling a remote manager (and a network handler through it)
+ * to communicate with and control the remote omxremote-py server and its player.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 public class RemoteService extends Service {
 
+    /** The instance of the binder implementation. */
     private final IBinder binder = new RemoteBinder();
+    /** Reference counter for bound clients. */
     private final AtomicInteger refCount = new AtomicInteger(0);
 
+    /** Lock object around start/stop operations. */
     private Lock startStopLock = new ReentrantLock();
+    /** The current remote manager object. */
     private RemoteManager remoteManager = null;
 
+    /** Starts the remote manager. */
     private void start() {
         startStopLock.lock();
         try {
@@ -40,10 +52,12 @@ public class RemoteService extends Service {
         }
     }
 
+    /** Stops the remote manager and unregisters the network state listener. */
     private void stop() {
         stop(true);
     }
 
+    /** Stops the remote manager and (optionally) unregisters the network state listener. */
     private void stop(boolean unregisterNetworkStateListener) {
         startStopLock.lock();
         try {
@@ -60,14 +74,20 @@ public class RemoteService extends Service {
         }
     }
 
+    /** Returns true if the remote manager has a valid connection to the server. */
     public boolean isConnected() {
         return remoteManager != null ? remoteManager.isConnected() : false;
     }
 
+    /** Returns true if the remote manager is connected and there is an active remote player. */
     public boolean isPlaybackActive() {
         return isConnected() && getPlayerState() != null;
     }
 
+    /**
+     * Returns the current player state if the manager is connected
+     * and there is an active remote player.
+     */
     public PlayerState getPlayerState() {
         if(isConnected()) {
             return remoteManager.getPlayerState();
@@ -76,84 +96,98 @@ public class RemoteService extends Service {
         }
     }
 
+    /** Requests remote file list for the given path. */
     public void requestFileList(String path) {
         if(remoteManager != null) {
             remoteManager.listFiles(path);
         }
     }
 
+    /** Requests starting remote playback of a video with the given video and subtitle path. */
     public void startPlayer(String video, String subtitle) {
         if(remoteManager != null) {
             remoteManager.startPlayer(video, subtitle);
         }
     }
 
+    /** Requests stopping the remote player. */
     public void stopPlayer() {
         if(remoteManager != null) {
             remoteManager.stopPlayer();
         }
     }
 
+    /** Sends a toggle play/pause command to the remote player. */
     public void playPause() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_PAUSE, null);
         }
     }
 
+    /** Sends a set volume command to the remote player. */
     public void setVolume(long volume) {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SET_VOLUME, Long.toString(volume));
         }
     }
 
+    /** Sends a seek playback position command to the remote player. */
     public void seekPlayer(long positionInMillis) {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SEEK_TO, Long.toString(positionInMillis));
         }
     }
 
+    /** Sends an increase speed command to the remote player. */
     public void increaseSpeed() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SPEED_INC, null);
         }
     }
 
+    /** Sends a decrease speed command to the remote player. */
     public void decreaseSpeed() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SPEED_DEC, null);
         }
     }
 
+    /** Sends an increase subtitle delay command to the remote player. */
     public void increaseSubtitleDelay() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SUB_DELAY_INC, null);
         }
     }
 
+    /** Sends a decrease subtitle delay command to the remote player. */
     public void decreaseSubtitleDelay() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SUB_DELAY_DEC, null);
         }
     }
 
+    /** Sends a toggle subtitle visibility command to the remote player. */
     public void toggleSubtitleVisibility() {
         if(remoteManager != null) {
             remoteManager.sendPlayerCommand(Header.MSG_A_SUB_TOGGLE, null);
         }
     }
 
+    /** Requests remote settings from the server. */
     public void requestSettings() {
         if(remoteManager != null) {
             remoteManager.requestSettings();
         }
     }
 
+    /** Requests modifying the value of a remote setting. */
     public void setSetting(String key, String value) {
         if(remoteManager != null) {
             remoteManager.setSetting(key, value);
         }
     }
 
+    /** This runs when the first client binds to the service. */
     private void onFirstBind() {
         startService(new Intent(this, RemoteService.class));
 
@@ -163,16 +197,21 @@ public class RemoteService extends Service {
         ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
         boolean connected = activeNetwork != null && activeNetwork.isConnected();
+
+        // start if we are connected to a Wi-Fi network
         if(connected && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
             start();
         }
     }
 
+    /** This runs when the last client unbinds. */
     private void onLastUnbind() {
         stop();
         stopSelf();
     }
 
+    /** @see android.app.Service#onBind(android.content.Intent) */
+    @Override
     public IBinder onBind(Intent intent) {
         int clients = refCount.incrementAndGet();
         if(clients == 1) {
@@ -182,6 +221,7 @@ public class RemoteService extends Service {
         return binder;
     }
 
+    /** @see android.app.Service#onUnbind(android.content.Intent) */
     @Override
     public boolean onUnbind(Intent intent) {
         int clients = refCount.decrementAndGet();
@@ -192,13 +232,20 @@ public class RemoteService extends Service {
         return super.onUnbind(intent);
     }
 
+    /** Service binder implementation returning the local service instance. */
     public class RemoteBinder extends Binder {
         RemoteService getService() {
             return RemoteService.this;
         }
     }
 
+    /** Network state receiver to listen on connection/disconnection of a Wi-Fi network. */
     private final BroadcastReceiver networkStateReceiver = new BroadcastReceiver() {
+
+        /**
+         * @see android.content.BroadcastReceiver
+         *      #onReceive(android.content.Context, android.content.Intent)
+         */
         @Override
         public void onReceive(Context context, Intent intent) {
             if(ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {

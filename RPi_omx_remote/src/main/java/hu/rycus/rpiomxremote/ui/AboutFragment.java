@@ -10,7 +10,13 @@ import hu.rycus.rpiomxremote.MainActivity;
 import hu.rycus.rpiomxremote.R;
 
 /**
- * Created by rycus on 11/24/13.
+ * Fragment displaying general info about the project
+ * and acknowlegdments to the services used in it.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/24/13.
+ *
+ * @author rycus
  */
 public class AboutFragment extends Fragment {
 

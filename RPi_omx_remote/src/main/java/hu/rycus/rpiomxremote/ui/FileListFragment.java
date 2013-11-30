@@ -27,40 +27,66 @@ import hu.rycus.rpiomxremote.util.Constants;
 import hu.rycus.rpiomxremote.util.Intents;
 
 /**
- * Created by rycus on 11/7/13.
+ * Fragment displaying a remote directory and its contents.
+ * Also the user can select the files to start here.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/7/13.
+ *
+ * @author rycus
  */
 public class FileListFragment extends Fragment {
 
+    /** Intent extra key for a FileList object. */
     private static final String EXTRA_FILES             = "x$files";
+    /** Intent extra key for a video file path. */
     private static final String EXTRA_SELECTED_VIDEO    = "x$sel_video";
+    /** Intent extra key for a subtitle file path. */
     private static final String EXTRA_SELECTED_SUBTITLE = "x$sel_subtitle";
 
+    /** The list adapter instance displaying the files. */
     private final FileListAdapter fileListAdapter = new FileListAdapter();
 
+    /** The root view of the fragment. */
     private View            rootView;
+    /** Text view displaying the current path. */
     private TextView        txtCurrentPath;
+    /** List view displaying the contents of the current directory. */
     private ListView        fileList;
+    /** View containing views displaying the selected files. */
     private View            selectionContainer;
+    /** Text view displaying a header on the selection panel. */
     private TextView        selectionHeader;
+    /** View group for the selected video. */
     private LinearLayout    selectedVideoContainer;
-    private TextView        txtSelectionStarting;
-    private ProgressBar     prgSelectionStarting;
+    /** Text view displaying the selected video. */
     private TextView        txtSelectedVideo;
+    /** Button to remove the selected video. */
     private ImageButton     btnRemoveSelectedVideo;
+    /** View group for the selected subtitle. */
     private LinearLayout    selectedSubtitleContainer;
+    /** Text view displaying the selected subtitle. */
     private TextView        txtSelectedSubtitle;
+    /** Button to remove the selected subtitle. */
     private ImageButton     btnRemoveSelectedSubtitle;
+    /** Text view informing that playback is starting. */
+    private TextView        txtSelectionStarting;
+    /** Progress bar informing that playback is starting. */
+    private ProgressBar     prgSelectionStarting;
+    /** Button to start playback with the selected files. */
     private Button          btnSelectionStart;
 
+    /** The FileList object containing the current path and the contents of it. */
     private FileList    current             = null;
+    /** The currently selected video file. */
     private String      selectedVideo       = null;
+    /** The currently selected subtitle file. */
     private String      selectedSubtitle    = null;
 
+    /** Helper object to bind/unbind the remote service. */
     private final RemoteServiceCreator rsc = new RemoteServiceCreator();
 
-    public FileListFragment() {
-    }
-
+    /** @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle) */
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -70,18 +96,21 @@ public class FileListFragment extends Fragment {
         if(selectedSubtitle != null) outState.putString(EXTRA_SELECTED_SUBTITLE, selectedSubtitle);
     }
 
+    /** @see android.support.v4.app.Fragment#onStart() */
     @Override
     public void onStart() {
         super.onStart();
         rsc.bind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onStop() */
     @Override
     public void onStop() {
         super.onStop();
         rsc.unbind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onPause() */
     @Override
     public void onPause() {
         super.onPause();
@@ -91,17 +120,20 @@ public class FileListFragment extends Fragment {
         prgSelectionStarting.setVisibility(View.GONE);
     }
 
+    /** @see android.support.v4.app.Fragment#onResume() */
     @Override
     public void onResume() {
         super.onResume();
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    /** Convert density independent pixels to actual pixels. */
     private float pxFromDp(float dp)
     {
         return dp * getActivity().getResources().getDisplayMetrics().density;
     }
 
+    /** Change the current selection and update the panel height with animation. */
     private void selectAnimated(Runnable selection) {
         selectionContainer.measure(0, 0);
         int startHeight = selectionContainer.getMeasuredHeight();
@@ -145,6 +177,7 @@ public class FileListFragment extends Fragment {
         rootView.startAnimation(animation);
     }
 
+    /** Change root path to the given directory. */
     private void changeToDir(String directory) {
         String parent = current != null ? current.getPath() : ".";
         String path = new File(parent, directory).getPath();
@@ -155,6 +188,7 @@ public class FileListFragment extends Fragment {
         }
     }
 
+    /** Processes user selection of a list item. */
     private void selectItem(final String item) {
         selectionHeader.setVisibility(View.VISIBLE);
         txtSelectionStarting.setVisibility(View.GONE);
@@ -183,6 +217,7 @@ public class FileListFragment extends Fragment {
         }
     }
 
+    /** Process video file selection. */
     private void selectVideo(String item, boolean updateSelection) {
         if(updateSelection) {
             selectedVideo = new File(current.getPath(), item).getPath();
@@ -194,6 +229,7 @@ public class FileListFragment extends Fragment {
         btnSelectionStart.setVisibility(View.VISIBLE);
     }
 
+    /** Process subtitle file selection. */
     private void selectSubtitle(String item, boolean updateSelection) {
         if(updateSelection) {
             selectedSubtitle = new File(current.getPath(), item).getPath();
@@ -204,6 +240,7 @@ public class FileListFragment extends Fragment {
         selectedSubtitleContainer.setVisibility(View.VISIBLE);
     }
 
+    /** Removes video file selection. */
     private void removeVideoSelection() {
         selectedVideo = null;
 
@@ -220,6 +257,7 @@ public class FileListFragment extends Fragment {
         });
     }
 
+    /** Removes subtitle file selection. */
     private void removeSubtitleSelection() {
         selectedSubtitle = null;
 
@@ -235,6 +273,7 @@ public class FileListFragment extends Fragment {
         });
     }
 
+    /** This executes when the user requests to start a video. */
     private void onStartVideo() {
         removeVideoSelection();
         removeSubtitleSelection();
@@ -249,10 +288,15 @@ public class FileListFragment extends Fragment {
         });
     }
 
+    /** Find a View in the selection container with the given ID. */
     private <T> T findSC(int id) {
         return (T) selectionContainer.findViewById(id);
     }
 
+    /**
+     * @see android.support.v4.app.Fragment
+     *      #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_filelist, container, false);
@@ -348,6 +392,7 @@ public class FileListFragment extends Fragment {
         return rootView;
     }
 
+    /** Sets the file list to display. */
     public void setFiles(FileList files) {
         current = files;
 

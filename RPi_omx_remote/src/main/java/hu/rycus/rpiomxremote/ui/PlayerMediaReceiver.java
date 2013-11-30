@@ -18,13 +18,24 @@ import hu.rycus.rpiomxremote.manager.PlayerProperty;
 import hu.rycus.rpiomxremote.manager.PlayerState;
 
 /**
- * Created by rycus on 11/23/13.
+ * Media receiver to provide lock screen controls.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/23/13.
+ *
+ * @author rycus
  */
 public class PlayerMediaReceiver extends BroadcastReceiver {
 
+    /** Media control client. */
     private static RemoteControlClient remoteControlClient;
+    /** Remote service instance used to control playback. */
     private static RemoteService remoteService;
 
+    /**
+     * @see android.content.BroadcastReceiver
+     *      #onReceive(android.content.Context, android.content.Intent)
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         if(Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
@@ -55,6 +66,11 @@ public class PlayerMediaReceiver extends BroadcastReceiver {
         }
     }
 
+    /**
+     * Activates lock screen controls.
+     * @param service The remote service that requested the controls
+     * @param state   The current player state
+     */
     public static void activate(RemoteService service, PlayerState state) {
         remoteService = service;
 
@@ -154,6 +170,7 @@ public class PlayerMediaReceiver extends BroadcastReceiver {
         }
     }
 
+    /** Deactivates lock screen controls. */
     public static void deactivate(RemoteService service) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             if(remoteControlClient != null) {
@@ -168,6 +185,7 @@ public class PlayerMediaReceiver extends BroadcastReceiver {
         remoteControlClient = null;
     }
 
+    /** Focus change listener doing absolutely nothing. */
     private static AudioManager.OnAudioFocusChangeListener focusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {

@@ -1,9 +1,16 @@
 package hu.rycus.rpiomxremote.util;
 
 /**
- * Created by rycus on 10/30/13.
+ * Header bytes for packets in network communication.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 public interface Header {
+
+    /* These headers are defined by the remote omxremote-py server. */
 
     int MSG_A_LOGIN         = 0xA1;
     int MSG_A_LIST_FILES    = 0xA2;

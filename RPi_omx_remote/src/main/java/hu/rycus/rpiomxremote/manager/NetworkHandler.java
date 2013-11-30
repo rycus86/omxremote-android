@@ -18,28 +18,56 @@ import hu.rycus.rpiomxremote.util.Flags;
 import hu.rycus.rpiomxremote.util.Header;
 
 /**
- * Created by rycus on 10/30/13.
+ * Network handler class responsible for low-level network communication
+ * with the remote <i>omxremote-py</i> server.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 class NetworkHandler extends Thread {
 
+    /** Tag for logcat. */
     private static final String LOG_TAG = "RPiOMX|NET";
 
+    /** Is this handler still enabled? */
     private boolean enabled = true;
 
+    /** The UDP/Multicast socket used for communication. */
     private MulticastSocket socket;
 
+    /** The session ID used in communication (as sent by the remote server. */
     private String sessionID = "???";
+    /** The buffer size (as defined by the remote server. */
     private int bufferSize = 1500;
 
+    /** The last known address of the remote server. */
     private SocketAddress address;
 
+    /**
+     * Blocking queue containing the received but unprocessed packets
+     * (should be empty because there should always be a consumer for the next packet).
+     */
     private final LinkedBlockingQueue<Packet> receivedPackets = new LinkedBlockingQueue<Packet>();
 
+    /** Map containing incomplete multipart packets by header. */
     private final Map<Integer, Packet> incompleteMessages = new HashMap<Integer, Packet>();
 
+    /** The remote manager instance which created this handler. */
     private final RemoteManager manager;
+    /**
+     * Set containing header types which should be processed asynchronously.
+     * At this level it means that they won't be offered to the packet queue,
+     * they will be forwarded to the manager instead to process it directly.
+     */
     private final Set<Integer> asynchHeaders;
 
+    /**
+     * Package-private constructor with the creator/owner of the instance.
+     * @param manager       The remote manager instance which created this handler
+     * @param asynchHeaders Set containing header types which should be processed asynchronously
+     */
     NetworkHandler(RemoteManager manager, Set<Integer> asynchHeaders) {
         super("NetworkHandler");
 
@@ -47,12 +75,28 @@ class NetworkHandler extends Thread {
         this.asynchHeaders  = asynchHeaders;
     }
 
+    /**
+     * <p>
+     *     This basically waits for an UDP packet,
+     *     merges it with a previous one if it was multipart,
+     *     then either sends it to the remote manager to process it
+     *     or queues it to have it processed elsewhere.
+     * </p>
+     * <p>
+     *     This code automatically handles session parameter changes
+     *     and reconnections in case of communication loss.
+     * </p>
+     *
+     * @see Runnable#run()
+     */
     @Override
     public void run() {
         while (enabled) {
+            // wait for a packet
             DatagramPacket dp = receivePacket();
 
             if(enabled && dp != null && dp.getLength() >= 2) {
+                // signal connection OK
                 manager.setConnected(true);
 
                 byte[] buffer = dp.getData();
@@ -67,6 +111,7 @@ class NetworkHandler extends Thread {
                         "length: " + (dp.getLength() - 2) + " | " + (finish ? "Complete" : "INCOMPLETE"));
 
                 if(finish && header == Header.MSG_A_LOGIN) {
+                    // set session parameters
                     address = dp.getSocketAddress();
 
                     Log.e(LOG_TAG, "Datagram packet received, header: 0x" + Integer.toHexString(header) + " source: " + address);
@@ -82,16 +127,20 @@ class NetworkHandler extends Thread {
                     continue;
                 } else if(finish && header == Header.MSG_A_ERROR_INVALID_SESSION) {
                     Log.e(LOG_TAG, "Invalid session error received");
+                    // signal connection loss
                     manager.setConnected(false);
 
                     if(enabled) {
+                        // retry login
                         sendWithoutSession(Header.MSG_A_LOGIN, "RPi::omxremote");
                         continue;
                     }
                 }
 
+                // create a new version of a packet, possibly by merging this to a previous one
                 Packet packet = mergeIncomplete(header, data, finish);
                 if(packet != null) {
+                    // process this packet
                     if(asynchHeaders.contains(header)) {
                         manager.processAsynchPacket(packet);
                     } else {
@@ -99,14 +148,23 @@ class NetworkHandler extends Thread {
                     }
                 }
             } else {
+                // we are not connected anymore
                 manager.setConnected(false);
             }
         }
     }
 
+    /**
+     * Creates a new version of a packet, possibly by merging the given data into a previous packet.
+     * @param header The header of the received packet
+     * @param data   The (possibly partial) data of a packet
+     * @param finish Is this the last packet? (or else more follows)
+     * @return A new version of a packet with the given header
+     */
     private Packet mergeIncomplete(int header, String data, boolean finish) {
         Packet incomplete = incompleteMessages.remove(header);
 
+        // concatenate data
         String newData = incomplete != null ? (incomplete.getData() + data) : data;
         Packet packet = new Packet(header, newData);
 
@@ -118,14 +176,16 @@ class NetworkHandler extends Thread {
         }
     }
 
-    Packet poll() {
-        return poll(0L);
-    }
+    /**
+     * Returns a queued packet immediately if there is any
+     * or null if there aren't any received packets queued.
+     */
+    Packet poll() { return poll(0L); }
 
-    Packet pollBlocking() {
-        return poll(2500L);
-    }
+    /** Polls a queued packet waiting 2.5 seconds at most to receive one. */
+    Packet pollBlocking() { return poll(2500L); }
 
+    /** Polls a queued packet waiting for the given time interval at most to receive one. */
     Packet poll(long timeout) {
         try {
             if(timeout > 0L) {
@@ -138,6 +198,10 @@ class NetworkHandler extends Thread {
         return null;
     }
 
+    /**
+     * Initializes the connection by setting the address, port number and other settings
+     * of the multicast UDP socket, then joins the multicast group.
+     */
     boolean initialize() {
         // TODO from database
         String group = "224.1.1.7";
@@ -145,7 +209,7 @@ class NetworkHandler extends Thread {
 
         try {
             socket = new MulticastSocket(port);
-            socket.setTimeToLive(2); // TODO magic numbers
+            socket.setTimeToLive(4); // TODO magic numbers
             socket.setSoTimeout(10000);
             socket.setLoopbackMode(true);
         } catch(Exception ex) {
@@ -166,6 +230,7 @@ class NetworkHandler extends Thread {
         return false;
     }
 
+    /** Stops this network handler instance. */
     void shutdown() {
         enabled = false;
         interrupt();
@@ -175,10 +240,7 @@ class NetworkHandler extends Thread {
         Log.e(LOG_TAG, "Network handler stopped");
     }
 
-    void setBufferSize(int size) {
-        this.bufferSize = size;
-    }
-
+    /** Helper method to receive one UDP datagram packet. */
     private DatagramPacket receivePacket() {
         try {
             DatagramPacket packet = new DatagramPacket(new byte[bufferSize], bufferSize);
@@ -195,26 +257,36 @@ class NetworkHandler extends Thread {
         return null;
     }
 
+    /**
+     * Sends a command with the given header and data contents
+     * without prefixing it with the session ID.
+     */
     boolean sendWithoutSession(int header, String data) {
         return send(header, data.getBytes(), Flags.WITHOUT_SESSION_ID);
     }
-
-    boolean send(int header, String data) {
-        return send(header, data.getBytes(), 0);
-    }
-
+    /**
+     * Sends a command with the given header and data contents
+     * without prefixing it with the session ID.
+     */
     boolean sendWithoutSession(int header, byte[] data) {
         return send(header, data, Flags.WITHOUT_SESSION_ID);
     }
-
+    /** Sends a command with the given header and data contents prefixing it with the session ID. */
+    boolean send(int header, String data) {
+        return send(header, data.getBytes(), 0);
+    }
+    /** Sends a command with the given header and no content prefixing it with the session ID. */
     boolean send(int header) {
         return send(header, new byte[0]);
     }
-
+    /** Sends a command with the given header and data contents prefixing it with the session ID. */
     boolean send(int header, byte[] data) {
         return send(header, data, 0);
     }
-
+    /**
+     * Sends a command with the given header and data contents
+     * modifying it according to the given flags.
+     */
     private boolean send(int header, byte[] data, int flags) {
         Log.v(LOG_TAG, "Sending H" + Integer.toHexString(header) + ": " + new String(data));
 
@@ -232,6 +304,7 @@ class NetworkHandler extends Thread {
 
         int offset = 0;
 
+        // send multipart chunks
         while (toSend > maxSize) {
             flags |= Flags.MORE_FOLLOWS;
 
@@ -256,6 +329,7 @@ class NetworkHandler extends Thread {
 
         flags &= ~Flags.MORE_FOLLOWS;
 
+        // send the rest of the message
         if (toSend > 0 || data.length == 0) {
             byte[] buffer = new byte[2 + data.length];
             buffer[0] = (byte) header;

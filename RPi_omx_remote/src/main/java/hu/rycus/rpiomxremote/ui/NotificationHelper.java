@@ -17,24 +17,41 @@ import hu.rycus.rpiomxremote.manager.PlayerState;
 import hu.rycus.rpiomxremote.util.Intents;
 
 /**
- * Created by rycus on 11/17/13.
+ * Helper class to manage the status bar notification.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/17/13.
+ *
+ * @author rycus
  */
 public class NotificationHelper extends BroadcastReceiver {
 
+    /** The persistent notification's identifier. */
     private static final int NOTIFICATION_ID = 1;
 
+    /** Identifier for the pause button in the notification. */
     private static final String BTN_PAUSE       = "pause";
+    /** Identifier for the volume down button in the notification. */
     private static final String BTN_VOLUME_DOWN = "vol-";
+    /** Identifier for the volume up button in the notification. */
     private static final String BTN_VOLUME_UP   = "vol+";
 
+    /** The notification builder used to create the notification. */
     private static NotificationCompat.Builder builder = null;
+    /** The remote views used on the expanded notification. */
     private static RemoteViews remoteViews = null;
 
-    // private static NotificationManager manager = null;
+    /**
+     * Did the user clear the notification?
+     * (Since the notification is started as a service's foreground notification
+     * the user shouldn't be able to clear it).
+     */
     private static boolean userCancelled = false;
 
+    /** Helper object to bind/unbind the remote service. */
     private static final RemoteServiceCreator rsc = new RemoteServiceCreator();
 
+    /** Posts a notification for the remote service with the given player state. */
     public static void postNotification(RemoteService service, PlayerState state) {
 
         if(userCancelled) return;
@@ -113,6 +130,7 @@ public class NotificationHelper extends BroadcastReceiver {
         PlayerMediaReceiver.activate(service, state);
     }
 
+    /** Cancels the notification. */
     public static void cancel(RemoteService service) {
         rsc.unbind(service);
 
@@ -124,6 +142,12 @@ public class NotificationHelper extends BroadcastReceiver {
         userCancelled = false;
     }
 
+    /**
+     * Receives intents from notification buttons.
+     *
+     * @see android.content.BroadcastReceiver
+     *      #onReceive(android.content.Context, android.content.Intent)
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         if(Intents.ACTION_NOTIFICATION_DELETED.equals(intent.getAction())) {
@@ -147,27 +171,6 @@ public class NotificationHelper extends BroadcastReceiver {
                 }
             }
         }
-    }
-
-    private static String formatSeconds(long value) {
-        StringBuilder builder = new StringBuilder();
-        long hours   = value / 3600;
-        long minutes = (value % 3600) / 60;
-        long seconds = value % 60;
-        // hourse
-        if(hours > 0)
-            builder.append(hours).append(":");
-        // minutes
-        if(minutes < 10)
-            builder.append("0");
-        builder.append(minutes);
-        builder.append(":");
-        // seconds
-        if(seconds < 10)
-            builder.append("0");
-        builder.append(seconds);
-        // to result
-        return builder.toString();
     }
 
 }

@@ -3,24 +3,34 @@ package hu.rycus.rpiomxremote.manager;
 import java.net.SocketAddress;
 
 /**
- * Created by rycus on 10/30/13.
+ * An object containing the data received from the server.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 public class Packet {
 
+    /** The header of the packet. */
     private final int header;
+    /** The contents of the packet as String. */
     private final String data;
 
+    /**
+     * Constructor to create a packet with header and data contents.
+     * @param header The header of the packet
+     * @param data   The contents of the packet as String
+     */
     public Packet(int header, String data) {
         this.header = header;
         this.data = data;
     }
 
-    public int getHeader() {
-        return header;
-    }
+    /** Returns the header of the packet. */
+    public int getHeader() { return header; }
 
-    public String getData() {
-        return data;
-    }
+    /** Returns the contents of the packet as String. */
+    public String getData() { return data; }
 
 }

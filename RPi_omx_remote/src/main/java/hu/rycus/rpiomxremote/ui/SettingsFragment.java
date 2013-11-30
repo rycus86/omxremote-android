@@ -22,30 +22,43 @@ import hu.rycus.rpiomxremote.blocks.Setting;
 import hu.rycus.rpiomxremote.util.Intents;
 
 /**
- * Created by rycus on 11/21/13.
+ * Fragment to display <strike>application</strike> and remote server/player settings.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/21/13.
+ *
+ * @author rycus
  */
 public class SettingsFragment extends Fragment {
 
+    /** Helper object to bind/unbind the remote service. */
     private final RemoteServiceCreator rsc = new RemoteServiceCreator();
 
+    /** @see android.support.v4.app.Fragment#onStart() */
     @Override
     public void onStart() {
         super.onStart();
         rsc.bind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onStop() */
     @Override
     public void onStop() {
         rsc.unbind(getActivity());
         super.onStop();
     }
 
+    /** @see android.support.v4.app.Fragment#onResume() */
     @Override
     public void onResume() {
         super.onResume();
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    /**
+     * @see android.support.v4.app.Fragment
+     *      #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_settings, container, false);
@@ -64,6 +77,7 @@ public class SettingsFragment extends Fragment {
         return layout;
     }
 
+    /** Attaches views to the root view based on the given setting. */
     private void addSetting(Setting setting, ViewGroup root) {
         switch (setting.getType()) {
             case TEXT:
@@ -97,6 +111,7 @@ public class SettingsFragment extends Fragment {
         }
     }
 
+    /** Sets up a view for a text valued setting. */
     private void setupText(View view, final Setting setting) {
         final TextView txtTitle = (TextView) view.findViewById(R.id.setting_title);
         final TextView txtValue = (TextView) view.findViewById(R.id.setting_value);
@@ -152,6 +167,7 @@ public class SettingsFragment extends Fragment {
         });
     }
 
+    /** Sets up a view for an enumerated setting. */
     private void setupEnum(View view, final Setting setting) {
         final TextView txtTitle = (TextView) view.findViewById(R.id.setting_title);
         final TextView txtValue = (TextView) view.findViewById(R.id.setting_value);
@@ -198,6 +214,7 @@ public class SettingsFragment extends Fragment {
         });
     }
 
+    /** Sets up a view for a number type setting. */
     private void setupNumber(View view, final Setting setting) {
         final TextView txtTitle = (TextView) view.findViewById(R.id.setting_title);
         final TextView txtValue = (TextView) view.findViewById(R.id.setting_value);
@@ -253,6 +270,7 @@ public class SettingsFragment extends Fragment {
         });
     }
 
+    /** Sets up a view for a boolean setting. */
     private void setupSwitch(View view, final Setting setting) {
         final TextView txtTitle = (TextView) view.findViewById(R.id.setting_title);
         final CheckBox ckBoxValue = (CheckBox) view.findViewById(R.id.setting_value_ckbox);

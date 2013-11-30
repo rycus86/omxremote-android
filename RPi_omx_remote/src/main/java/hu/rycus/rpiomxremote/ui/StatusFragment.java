@@ -15,41 +15,61 @@ import hu.rycus.rpiomxremote.RemoteService;
 import hu.rycus.rpiomxremote.RemoteServiceCreator;
 
 /**
- * Created by rycus on 11/10/13.
+ * Fragment displaying the current status and some shortcuts to basic functions.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/10/13.
+ *
+ * @author rycus
  */
 public class StatusFragment extends Fragment {
 
+    /** Progress bar displayed while unconnected. */
     private ProgressBar loadingProgress;
+    /** Header view displaying the current status. */
     private View        statusHeader;
+    /** Text displaying the current status as text. */
     private TextView    txtStatus;
+    /** Button to start remote file browsing. */
     private Button      btnBrowse;
+    /** Button to display remote settings. */
     private Button      btnSettings;
 
+    /** Helper object to bind/unbind the remote service. */
     private final RemoteServiceCreator rsc = new RemoteServiceCreator() {
+
+        /**
+         * @see hu.rycus.rpiomxremote.RemoteServiceCreator
+         *      #onServiceInstanceReceived(hu.rycus.rpiomxremote.RemoteService)
+         */
         @Override
         protected void onServiceInstanceReceived(RemoteService service) {
             setConnected(service != null && service.isConnected());
         }
     };
 
+    /** @see android.support.v4.app.Fragment#onStart() */
     @Override
     public void onStart() {
         super.onStart();
         rsc.bind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onStop() */
     @Override
     public void onStop() {
         super.onStop();
         rsc.unbind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onResume() */
     @Override
     public void onResume() {
         super.onResume();
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
+    /** Sets view states according to connection status. */
     public void setConnected(boolean connected) {
         if(loadingProgress != null) {
             loadingProgress.setVisibility(connected ? View.GONE : View.VISIBLE);
@@ -73,6 +93,10 @@ public class StatusFragment extends Fragment {
         btnSettings.setEnabled(connected);
     }
 
+    /**
+     * @see android.support.v4.app.Fragment
+     *      #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_status, container, false);

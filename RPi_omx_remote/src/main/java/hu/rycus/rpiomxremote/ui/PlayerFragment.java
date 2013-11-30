@@ -31,52 +31,98 @@ import hu.rycus.rpiomxremote.manager.PlayerProperty;
 import hu.rycus.rpiomxremote.manager.PlayerState;
 
 /**
- * Created by rycus on 11/7/13.
+ * Fragment displaying player controls during playback.
+ *
+ * <br/>
+ * Created by Viktor Adam on 11/7/13.
+ *
+ * @author rycus
  */
 public class PlayerFragment extends Fragment {
 
+    /** Intent extra key for video duration in milliseconds. */
     public static final String EXTRA_PLAYER_DURATION    = "init.duration";
+    /** Intent extra key for video volume. */
     public static final String EXTRA_PLAYER_VOLUME      = "init.volume";
+    /** Intent extra key for video file name. */
     public static final String EXTRA_PLAYER_VIDEO_FILE  = "init.video.file";
 
+    /** The root view group of the fragment. */
     private ViewGroup   vRoot;
+    /** Image view for the background poster. */
     private ImageView   imgBackground;
+    /** View containing header controls and texts. */
     private View        vHeader;
+    /** View (button) for back navigation. */
     private View        btnBack;
+    /** View (button) for menu popup. */
     private View        btnMenu;
+    /** Text view displaying video title. */
     private TextView    txtTitle;
+    /** Text view displaying additional video info. */
     private TextView    txtInfo;
+    /** Text view displaying extra info for the video. */
     private TextView    txtExtra;
+    /** View containing buttons for extra controls. */
     private View        vExtraControls;
+    /** View containing miscellaneous informations. */
     private ViewGroup   vMiscellaneous;
+    /** View (button) for adjusting subtitle delay (decrementing it). */
+    private View        btnSubtitleDelayDec;
+    /** View (button) for adjusting subtitle delay (incrementing it). */
+    private View        btnSubtitleDelayInc;
+    /** View (button) to jump back in the video. */
+    private View        btnJumpBackward;
+    /** View (button) to jump forward in the video. */
+    private View        btnJumpForward;
+    /** View containing basic video controls (seek bar and volume controls). */
+    private View        vControls;
+    /** Seek bar displaying/adjusting playback position. */
+    private SeekBar     seekbar;
+    /** Button to play/pause the video. */
+    private ImageButton btnPlayPause;
+    /** View (button) to adjust the volume (up). */
+    private View        btnVolumeUp;
+    /** View (button) to adjust the volume (down). */
+    private View        btnVolumeDown;
+    /** Text view displaying the elapsed time (the position of the player). */
+    private TextView    txtTimeElapsed;
+    /** Text view displaying the length of the video. */
+    private TextView    txtTimeLength;
+    /** View to provide background for the elapsed time view. */
+    private View        vShadowTimeElapsed;
+    /** View to provide background for the video length view. */
+    private View        vShadowTimeLength;
+    /** Text view displaying the current volume. */
+    private TextView    txtVolume;
+
     // These functions are not implemented yet
     // private View        btnSlower;
     // private View        btnFaster;
     // private View        btnToggleSubtitle;
-    private View        btnSubtitleDelayDec;
-    private View        btnSubtitleDelayInc;
-    private View        btnJumpBackward;
-    private View        btnJumpForward;
-    private View        vControls;
-    private SeekBar     seekbar;
-    private ImageButton btnPlayPause;
-    private View        btnVolumeUp;
-    private View        btnVolumeDown;
-    private TextView    txtTimeElapsed;
-    private TextView    txtTimeLength;
-    private View        vShadowTimeElapsed;
-    private View        vShadowTimeLength;
-    private TextView    txtVolume;
 
+    /** True if the user is adjusting the position seek bar. */
     private boolean seekbarIsAdjusting = false;
+    /** The length of the video in playback. */
     private long playbackLength = 0;
+    /** The current volume. */
     private long volume = Long.MIN_VALUE;
+    /** Popup menu for the menu button. */
     private PopupMenu popupMenu;
+    /** True if the player provided miscellaneous data. */
     private boolean hasMiscellaneousData = false;
+    /** True if miscellaneous data was shown at least once. */
     private boolean miscellaneousWasShown = false;
+    /** True if a poster was set instead of the default background. */
     private boolean posterWasSet = false;
 
+    /** Helper object to bind/unbind the remote service. */
     private final RemoteServiceCreator rsc = new RemoteServiceCreator() {
+
+        /**
+         * @see hu.rycus.rpiomxremote.RemoteServiceCreator
+         *      #onServiceInstanceReceived(hu.rycus.rpiomxremote.RemoteService)
+         */
         @Override
         protected void onServiceInstanceReceived(RemoteService service) {
             super.onServiceInstanceReceived(service);
@@ -101,28 +147,33 @@ public class PlayerFragment extends Fragment {
         }
     };
 
+    /** @see android.support.v4.app.Fragment#onCreate(android.os.Bundle) */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
     }
 
+    /** @see android.support.v4.app.Fragment#onStart() */
     @Override
     public void onStart() {
         super.onStart();
         rsc.bind(getActivity());
     }
 
+    /** @see android.support.v4.app.Fragment#onStop() */
     @Override
     public void onStop() {
         super.onStop();
         rsc.unbind(getActivity());
     }
 
+    /** Finds a view by the given identifier. */
     private <T> T find(int id) {
         return (T) vRoot.findViewById(id);
     }
 
+    /** Formats time given in seconds. */
     private String formatSeconds(long value) {
         StringBuilder builder = new StringBuilder();
         long hours   = value / 3600;
@@ -144,11 +195,13 @@ public class PlayerFragment extends Fragment {
         return builder.toString();
     }
 
+    /** Sets the current playback length (on the UI). */
     private void setLength(long milliseconds) {
         this.playbackLength = milliseconds;
         txtTimeLength.setText(formatSeconds(milliseconds / 1000));
     }
 
+    /** Sets the current playback position (on the UI). */
     private void setPosition(long milliseconds, boolean fromUser) {
         if(fromUser || !seekbarIsAdjusting) {
             txtTimeElapsed.setText(formatSeconds(milliseconds / 1000));
@@ -164,6 +217,7 @@ public class PlayerFragment extends Fragment {
         }
     }
 
+    /** Sets the current volume (on the UI). */
     private void setVolume(long volume) {
         if(this.volume == volume) return;
 
@@ -190,18 +244,21 @@ public class PlayerFragment extends Fragment {
         this.txtVolume.startAnimation(animation);
     }
 
+    /** Sets the paused state of the player (on the UI). */
     private void setPaused(boolean paused) {
         btnPlayPause.setImageResource(paused ?
                 R.drawable.ic_action_play :
                 R.drawable.ic_action_pause);
     }
 
+    /** Sets player state (on UI). */
     public void setState(long positionInMillis, long volume, boolean paused) {
         setPosition(positionInMillis, false);
         setVolume(volume);
         setPaused(paused);
     }
 
+    /** Processes current player state. */
     public void processPlayerState(PlayerState state) {
         setLength(state.getDuration());
         setState(state.getPosition(), state.getVolume(), state.isPaused());
@@ -273,6 +330,10 @@ public class PlayerFragment extends Fragment {
         }
     }
 
+    /**
+     * Fade in then out floating controls.
+     * @param singleControl If not null then only show this single control
+     */
     private void showHidingControls(final View singleControl) {
         boolean show = singleControl != null ?
                 singleControl.getVisibility() != View.VISIBLE :
@@ -341,6 +402,7 @@ public class PlayerFragment extends Fragment {
         }
     }
 
+    /** Runs when playback finishes. */
     public void onPlaybackFinished() {
         Animation fadeoutAnimation = new AlphaAnimation(1f, 0f);
         fadeoutAnimation.setDuration(1000);
@@ -374,6 +436,10 @@ public class PlayerFragment extends Fragment {
         txtTimeLength.startAnimation(exitRightAnimSet);
     }
 
+    /**
+     * @see android.support.v4.app.Fragment
+     *      #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         vRoot = (ViewGroup) inflater.inflate(R.layout.fragment_player, container, false);

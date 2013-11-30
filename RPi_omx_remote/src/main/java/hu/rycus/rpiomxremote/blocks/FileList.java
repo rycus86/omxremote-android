@@ -7,33 +7,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by rycus on 10/30/13.
+ * Utility class containing a path name and the immediate
+ * file (or directory) names in it.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 public class FileList implements Parcelable {
 
+    /** The root path of this file list block. */
     private String path;
+
+    /** The file or directory names of the directory at path. */
     private List<String> files;
 
+    /** Contructor to create from Parcelable. */
     private FileList() { }
 
+    /**
+     * Public constructor.
+     * @param path  T)he root path of this file list block
+     * @param files The file or directory names of the directory at path
+     */
     public FileList(String path, List<String> files) {
         this.path = path;
         this.files = files;
     }
 
+    /** Returns the root path of this file list block. */
     public String getPath() {
         return path;
     }
 
+    /** Returns the file or directory names of the directory at path. */
     public List<String> getFiles() {
         return files;
     }
 
+    /** @see android.os.Parcelable#describeContents() */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /** @see android.os.Parcelable#writeToParcel(android.os.Parcel, int) */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(path);
@@ -45,7 +64,10 @@ public class FileList implements Parcelable {
         }
     }
 
+    /** @see android.os.Parcelable.Creator */
     public static Creator<FileList> CREATOR = new Creator<FileList>() {
+
+        /** @see android.os.Parcelable.Creator#createFromParcel(android.os.Parcel) */
         @Override
         public FileList createFromParcel(Parcel source) {
             FileList instance = new FileList();
@@ -64,6 +86,7 @@ public class FileList implements Parcelable {
             return instance;
         }
 
+        /** @see android.os.Parcelable.Creator#newArray(int) */
         @Override
         public FileList[] newArray(int size) {
             return new FileList[size];

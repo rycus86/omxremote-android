@@ -16,14 +16,21 @@ import hu.rycus.rpiomxremote.blocks.FileList;
 import hu.rycus.rpiomxremote.util.Constants;
 
 /**
- * Created by rycus on 10/30/13.
+ * Adapter for listing the contents of a FileList object.
+ *
+ * <br/>
+ * Created by Viktor Adam on 10/30/13.
+ *
+ * @author rycus
  */
 public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */ {
     // TODO implement SectionIndexer
 
+    /** The items (file and directory names) of the root path. */
     private final List<String> items = new ArrayList<String>();
     // private final List<Section> sections = new LinkedList<Section>();
 
+    /** Constructor. */
     public FileListAdapter() {
         /*
         sections.add(new Section("#"));
@@ -33,27 +40,32 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
         */
     }
 
+    /** @see android.widget.BaseAdapter#getCount() */
     @Override
     public int getCount() {
         return items.size();
     }
 
+    /** @see android.widget.BaseAdapter#getItem(int) */
     @Override
     public Object getItem(int position) {
         return items.get(position);
     }
 
+    /** @see android.widget.BaseAdapter#getItemId(int) */
     @Override
     public long getItemId(int position) {
         return position;
     }
 
+    /** @see android.widget.BaseAdapter#getView(int, android.view.View, android.view.ViewGroup) */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
 
         ViewHolder holder = null;
 
+        // if there is no list item view, inflate one
         if(view == null) {
             LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = inflater.inflate(R.layout.li_file, parent, false);
@@ -61,12 +73,14 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
             ImageView vIcon     = (ImageView) view.findViewById(R.id.li_file_icon);
             TextView  vFilename = (TextView)  view.findViewById(R.id.li_file_name);
 
+            // setup the viewholder
             holder = new ViewHolder();
             holder.imgIcon = vIcon;
             holder.txtFilename = vFilename;
 
             view.setTag(holder);
         } else {
+            // the views were already found
             holder = (ViewHolder) view.getTag();
         }
 
@@ -94,6 +108,7 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
         return view;
     }
 
+    /** Sets the currently diplayed FileList item. */
     public void setItems(FileList list) {
         items.clear();
         items.addAll(list.getFiles());
@@ -121,6 +136,7 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
         notifyDataSetChanged();
     }
 
+    /*
     private class Section {
         String head;
         int start;
@@ -135,7 +151,6 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
         }
     }
 
-    /*
     @Override
     public Object[] getSections() {
         return sections.toArray();
@@ -169,9 +184,12 @@ public class FileListAdapter extends BaseAdapter /* implements SectionIndexer */
     }
     */
 
+    /** Class for holding the inflated views of a list item. */
     private class ViewHolder {
 
+        /** The icon in the list item. */
         ImageView imgIcon;
+        /** The text view (displaying the file name) in the list item. */
         TextView txtFilename;
 
     }
