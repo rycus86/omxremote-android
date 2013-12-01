@@ -10,7 +10,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="" />
 
     <application
         android:allowBackup="true"
@@ -29,17 +28,18 @@
             </intent-filter>
         </activity>
 
-        <service android:name="hu.rycus.rpiomxremote.RemoteService" />
-
         <activity
             android:name="hu.rycus.rpiomxremote.PlayerActivity"
             android:label="@string/title_activity_player"
             android:launchMode="singleTop"
-            android:parentActivityName="MainActivity" >
+            android:parentActivityName="MainActivity"
+            android:exported="true" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />
         </activity>
+
+        <service android:name="hu.rycus.rpiomxremote.RemoteService" />
 
         <receiver android:name=".ui.NotificationHelper" android:exported="false">
             <intent-filter>
