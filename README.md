@@ -15,6 +15,13 @@ can be found here:
 
     https://github.com/rycus86/omxremote-py
 
+Video
+-----
+
+Here is a small video to demonstrate the client UI:
+
+[![screencast](https://i.ytimg.com/vi/wfhlWqQlv28/3.jpg?1385905603632)](http://www.youtube.com/watch?v=wfhlWqQlv28)
+
 Features
 --------
 
