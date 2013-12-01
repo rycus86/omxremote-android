@@ -41,14 +41,14 @@
 
         <service android:name="hu.rycus.rpiomxremote.RemoteService" />
 
-        <receiver android:name=".ui.NotificationHelper" android:exported="false">
+        <receiver android:name=".ui.NotificationHelper" android:exported="true">
             <intent-filter>
                 <action android:name="hu.rycus.rpiomxremote.NOTIFICATION_DELETED"/>
                 <action android:name="hu.rycus.rpiomxremote.NOTIFICATION_BUTTON_CLICKED"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".ui.PlayerMediaReceiver" android:exported="false">
+        <receiver android:name=".ui.PlayerMediaReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
