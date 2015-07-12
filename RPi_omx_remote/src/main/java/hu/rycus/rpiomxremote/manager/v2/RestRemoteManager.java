@@ -6,6 +6,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.http.HttpHost;
@@ -22,7 +23,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -37,6 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import hu.rycus.rpiomxremote.RemoteService;
 import hu.rycus.rpiomxremote.blocks.FileList;
 import hu.rycus.rpiomxremote.blocks.Setting;
+import hu.rycus.rpiomxremote.blocks.SubtitleItem;
+import hu.rycus.rpiomxremote.blocks.SubtitleMetadata;
 import hu.rycus.rpiomxremote.manager.PlayerState;
 import hu.rycus.rpiomxremote.manager.RemoteManager;
 import hu.rycus.rpiomxremote.ui.NotificationHelper;
@@ -365,6 +370,120 @@ public class RestRemoteManager implements RemoteManager, Runnable {
         new ControlTask("subtitle/toggle").execute();
     }
 
+    @Override
+    public void loadSubtitleMetadata(final String filename, final SubtitleMetadataCallback callback) {
+        new RestTask<SubtitleMetadata>() {
+            @Override
+            protected HttpRequestBaseHC4 prepareRequest() throws Exception {
+                final String uri = httpHost.toURI().concat("/subtitles/metadata");
+                final HttpPostHC4 request = new HttpPostHC4(uri);
+                request.setEntity(new StringEntityHC4(
+                        Json.start("filename", filename).build(),
+                        ContentType.APPLICATION_JSON));
+                return request;
+            }
+
+            @Override
+            protected SubtitleMetadata parse(final HttpResponse response) throws Exception {
+                return MAPPER.readValue(response.getEntity().getContent(), SubtitleMetadata.class);
+            }
+
+            @Override
+            protected void onPostExecute(final SubtitleMetadata metadata) {
+                callback.onMetadataReceived(metadata);
+            }
+        }.execute();
+    }
+
+    @Override
+    public void querySubtitles(final String provider, final String query,
+                               final SubtitleQueryCallback callback) {
+        new RestTask<SubtitleItem>() {
+            @Override
+            protected HttpRequestBaseHC4 prepareRequest() throws Exception {
+                final String uri = httpHost.toURI().concat("/subtitles/query");
+                final HttpPostHC4 request = new HttpPostHC4(uri);
+                request.setEntity(new StringEntityHC4(
+                        Json.start("provider", provider)
+                                .put("query", query)
+                                .build(),
+                        ContentType.APPLICATION_JSON));
+                return request;
+            }
+
+            @Override
+            protected SubtitleItem parse(final HttpResponse response) throws Exception {
+                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    try (final BufferedReader reader = wrapContent(response)) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (!line.trim().isEmpty()) {
+                                final SubtitleItem item = MAPPER.readValue(line, SubtitleItem.class);
+                                publishProgress(item);
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            private BufferedReader wrapContent(final HttpResponse response) throws IOException {
+                return new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            }
+
+            @Override
+            protected void onProgressUpdate(final SubtitleItem... values) {
+                for (final SubtitleItem item : values) {
+                    callback.onItemReceived(item);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
+    public void downloadSubtitle(final String provider, final String id, final String directory,
+                                 final SubtitleDownloadCallback callback) {
+        new RestTask<String>() {
+            @Override
+            protected HttpRequestBaseHC4 prepareRequest() throws Exception {
+                final String uri = httpHost.toURI().concat("/subtitles/download");
+                final HttpPostHC4 request = new HttpPostHC4(uri);
+                request.setEntity(new StringEntityHC4(
+                        Json.start("provider", provider)
+                                .put("id", id)
+                                .put("directory", directory)
+                                .build(),
+                        ContentType.APPLICATION_JSON));
+                return request;
+            }
+
+            @Override
+            protected String parse(final HttpResponse response) throws Exception {
+                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    final JsonNode json = MAPPER.readTree(response.getEntity().getContent());
+                    if (json != null) {
+                        final JsonNode pathNode = json.get("path");
+                        if (pathNode != null) {
+                            return pathNode.asText();
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(final String result) {
+                if (result != null) {
+                    callback.onDownloaded(result);
+                } else {
+                    callback.onFailed();
+                }
+            }
+        }.execute();
+    }
+
     private PlayerState checkPlayerState(final boolean update) {
         try {
             return new RestTask<PlayerState>() {
@@ -491,7 +610,7 @@ public class RestRemoteManager implements RemoteManager, Runnable {
         }
     }
 
-    private abstract class RestTask<R> extends AsyncTask<Void, Void, R> {
+    private abstract class RestTask<R> extends AsyncTask<Void, R, R> {
 
         protected abstract HttpRequestBaseHC4 prepareRequest() throws Exception;
 

@@ -27,6 +27,10 @@
     <string name="fl_btn_start">Start</string>
     <string name="fl_starting">Starting selected video</string>
 
+    <!-- Subtitles -->
+    <string name="sub_title">Download subtitle</string>
+    <string name="sub_query_hint">Query</string>
+
     <!-- Player -->
     <string name="pl_volume">Volume: %d dB</string>
     <string name="pl_menu_stop">Stop player</string>

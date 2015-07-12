@@ -1,5 +1,9 @@
 package hu.rycus.rpiomxremote.manager;
 
+import hu.rycus.rpiomxremote.manager.v2.SubtitleDownloadCallback;
+import hu.rycus.rpiomxremote.manager.v2.SubtitleMetadataCallback;
+import hu.rycus.rpiomxremote.manager.v2.SubtitleQueryCallback;
+
 public interface RemoteManager {
 
     /** Stops this remote manager instance. */
@@ -41,5 +45,11 @@ public interface RemoteManager {
     void ctrlDecreaseSubtitleDelay();
 
     void ctrlToggleSubtitleVisibility();
+
+    void loadSubtitleMetadata(String filename, SubtitleMetadataCallback callback);
+
+    void querySubtitles(String provider, String query, SubtitleQueryCallback callback);
+
+    void downloadSubtitle(String provider, String id, String directory, SubtitleDownloadCallback callback);
 
 }

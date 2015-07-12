@@ -1,5 +1,7 @@
 package hu.rycus.rpiomxremote.ui;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -200,7 +202,7 @@ public class FileListFragment extends Fragment {
                     @Override
                     public void run() {
                         selectionContainer.measure(0, 0);
-                        int startHeight = selectionContainer.getMeasuredHeight();
+                        // int startHeight = selectionContainer.getMeasuredHeight();
 
                         String extension = item.substring(item.lastIndexOf('.') + 1);
                         if(Constants.Extensions.isVideo(extension)) {
@@ -245,12 +247,13 @@ public class FileListFragment extends Fragment {
         selectedVideo = null;
 
         selectAnimated(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 txtSelectedVideo.setText(getResources().getText(R.string.fl_selection_no_video));
                 selectedVideoContainer.setVisibility(View.GONE);
                 btnSelectionStart.setVisibility(View.GONE);
 
-                if(selectedSubtitle == null) {
+                if (selectedSubtitle == null) {
                     selectionHeader.setText(getResources().getText(R.string.fl_selection_hint));
                 }
             }
@@ -288,7 +291,17 @@ public class FileListFragment extends Fragment {
         });
     }
 
+    private boolean isVideoFile(final String item) {
+        if(!item.endsWith("/") & item.contains(".")) {
+            String extension = item.substring(item.lastIndexOf('.') + 1);
+            return Constants.Extensions.isVideo(extension);
+        }
+
+        return false;
+    }
+
     /** Find a View in the selection container with the given ID. */
+    @SuppressWarnings("unchecked")
     private <T> T findSC(int id) {
         return (T) selectionContainer.findViewById(id);
     }
@@ -323,6 +336,29 @@ public class FileListFragment extends Fragment {
                 selectItem((String) parent.getItemAtPosition(position));
             }
         });
+        fileList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(final AdapterView<?> parent,
+                                           final View view, final int position, final long id) {
+
+                if (current != null) {
+                    final String item = (String) parent.getItemAtPosition(position);
+                    if (isVideoFile(item)) {
+                        final SubtitleDialogFragment dialog =
+                                SubtitleDialogFragment.create(item, current.getPath());
+
+                        dialog.setTargetFragment(
+                                FileListFragment.this,
+                                SubtitleDialogFragment.REQUEST_SUBTITLES);
+
+                        dialog.show(getFragmentManager(), "SubtitleDialog");
+                    }
+                }
+
+                return true;
+            }
+        });
+
         btnRemoveSelectedVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -349,7 +385,7 @@ public class FileListFragment extends Fragment {
 
         if(savedInstanceState != null) {
             if(savedInstanceState.containsKey(EXTRA_FILES)) {
-                FileList files = (FileList) savedInstanceState.getParcelable(EXTRA_FILES);
+                FileList files = savedInstanceState.getParcelable(EXTRA_FILES);
                 setFiles(files);
             }
 
@@ -403,4 +439,17 @@ public class FileListFragment extends Fragment {
         fileListAdapter.setItems(files);
     }
 
+    @Override
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SubtitleDialogFragment.REQUEST_SUBTITLES) {
+                final String directory =
+                        data.getStringExtra(SubtitleDialogFragment.RESULT_DIRECTORY);
+
+                if(rsc.isServiceBound()) {
+                    rsc.getService().requestFileList(directory);
+                }
+            }
+        }
+    }
 }

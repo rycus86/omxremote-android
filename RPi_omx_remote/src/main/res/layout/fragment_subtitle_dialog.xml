@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp">
+
+    <TextView
+        android:id="@+id/sub_txt_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/sub_btn_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_action_play"
+        android:layout_below="@id/sub_txt_info"
+        android:layout_alignParentEnd="true"
+        style="@style/BorderlessButton"/>
+
+    <EditText
+        android:id="@+id/sub_edit_query"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sub_txt_info"
+        android:layout_toStartOf="@id/sub_btn_search"
+        android:hint="@string/sub_query_hint"/>
+
+    <ProgressBar
+        android:id="@+id/sub_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/sub_edit_query"
+        android:indeterminate="true"
+        android:visibility="gone"/>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/sub_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/sub_edit_query">
+
+        <android.support.v4.view.PagerTitleStrip
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"/>
+
+    </android.support.v4.view.ViewPager>
+
+</RelativeLayout>

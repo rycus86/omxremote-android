@@ -17,6 +17,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import hu.rycus.rpiomxremote.manager.PlayerState;
 import hu.rycus.rpiomxremote.manager.RemoteManager;
 import hu.rycus.rpiomxremote.manager.v2.RestRemoteManager;
+import hu.rycus.rpiomxremote.manager.v2.SubtitleDownloadCallback;
+import hu.rycus.rpiomxremote.manager.v2.SubtitleMetadataCallback;
+import hu.rycus.rpiomxremote.manager.v2.SubtitleQueryCallback;
 
 /**
  * Remote service responsible for background tasks
@@ -184,6 +187,27 @@ public class RemoteService extends Service {
     public void setSetting(String key, String value) {
         if(remoteManager != null) {
             remoteManager.setSetting(key, value);
+        }
+    }
+
+    public void loadSubtitleMetadata(final String filename,
+                                     final SubtitleMetadataCallback callback) {
+        if (remoteManager != null) {
+            remoteManager.loadSubtitleMetadata(filename, callback);
+        }
+    }
+
+    public void querySubtitles(final String provider, final String query,
+                               final SubtitleQueryCallback callback) {
+        if (remoteManager != null) {
+            remoteManager.querySubtitles(provider, query, callback);
+        }
+    }
+
+    public void downloadSubtitle(final String provider, final String id, final String directory,
+                                 final SubtitleDownloadCallback callback) {
+        if (remoteManager != null) {
+            remoteManager.downloadSubtitle(provider, id, directory, callback);
         }
     }
 
