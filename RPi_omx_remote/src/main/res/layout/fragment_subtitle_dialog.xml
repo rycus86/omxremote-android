@@ -36,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/sub_edit_query"
+        android:layout_marginTop="10dp"
         android:indeterminate="true"
         android:visibility="gone"/>
 
