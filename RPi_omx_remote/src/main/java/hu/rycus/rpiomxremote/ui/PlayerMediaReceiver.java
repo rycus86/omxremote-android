@@ -101,7 +101,8 @@ public class PlayerMediaReceiver extends BroadcastReceiver {
 
             RemoteControlClient.MetadataEditor editor = remoteControlClient.editMetadata(true);
             if(state.getPoster() != null) {
-                editor.putBitmap(RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK, state.getPoster().getBitmap());
+                editor.putBitmap(RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
+                        state.getPoster().getBitmap());
             } else {
                 editor.putBitmap(RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
                         BitmapFactory.decodeResource(service.getResources(), R.drawable.raspberry));

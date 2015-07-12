@@ -179,7 +179,7 @@ public class PlayerFragment extends Fragment {
         long hours   = value / 3600;
         long minutes = (value % 3600) / 60;
         long seconds = value % 60;
-        // hourse
+        // hours
         if(hours > 0)
             builder.append(hours).append(":");
         // minutes

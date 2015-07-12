@@ -1,6 +1,5 @@
 package hu.rycus.rpiomxremote.manager;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -9,7 +8,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -32,7 +33,7 @@ import hu.rycus.rpiomxremote.util.Intents;
 public class PlayerState {
 
     /** The filename of the started video. */
-    private final String videofile;
+    private String videofile;
     /** The title of the video. */
     private String title;
     /** Information about the video. */
@@ -45,11 +46,19 @@ public class PlayerState {
     private long volume;
     /** True if the video is currently paused, false if the video is playing. */
     private boolean paused = false;
+    /** Extras from the remote process (series only). */
+    @JsonProperty("extras")
+    private final Map<String, String> extras = new HashMap<>();
     /** Collection of player properties with their values as Strings. */
-    private final Map<PlayerProperty, String> properties = new HashMap<PlayerProperty, String>();
+    @JsonIgnore
+    private final Map<PlayerProperty, String> properties = new HashMap<>();
 
     /** The poster bitmap that belongs to the current video. */
+    @JsonIgnore
     private BitmapDrawable poster = null;
+
+    // For JSON deserialization
+    private PlayerState() { }
 
     /**
      * Constructor with basic parameters.
@@ -65,6 +74,19 @@ public class PlayerState {
         this.volume     = volume;
 
         PlayerProperty.initialize(resources);
+    }
+
+    public void processExtras(final RemoteService remoteService) {
+        PlayerProperty.initialize(remoteService.getResources());
+
+        for (final String id : extras.keySet()) {
+            final PlayerProperty property = PlayerProperty.get(id);
+            if (property != null) {
+                properties.put(property, extras.get(id));
+            }
+        }
+
+        loadPoster(remoteService);
     }
 
     /** Returns the filename of the started video. */
@@ -96,7 +118,7 @@ public class PlayerState {
         if(properties.containsKey(infoProperty)) {
             return properties.get(infoProperty);
         } else {
-            return info;
+            return info != null ? info : "";
         }
     }
 
@@ -153,14 +175,14 @@ public class PlayerState {
      * @param service
      * @param poster
      */
-    private void setPoster(RemoteService service, BitmapDrawable poster) {
+    private void setPoster(final RemoteService service, BitmapDrawable poster) {
         this.poster = poster;
 
         Intent intent = new Intent(Intents.ACTION_CALLBACK);
         intent.putExtra(Intents.EXTRA_PLAYER_REPORT, Intents.EXTRA_PLAYER_REPORT_EXTRA);
         LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
 
-        NotificationHelper.postNotification(service, this);
+        NotificationHelper.postNotification(service, PlayerState.this);
     }
 
     /**
@@ -211,32 +233,34 @@ public class PlayerState {
         }
     }
 
+    private void loadPoster(final RemoteService service) {
+        for(PlayerProperty posterProp : PlayerProperty.listPosters()) {
+            String posterUrl = properties.get(posterProp);
+            if(posterUrl != null) {
+                if(loadImage(posterUrl, service)) break;
+            }
+        }
+    }
+
     /**
      * Load a poster image from the given URL.
      * @param posterUrl The URL location of the poster image
      * @param service   The remote service requested parsing the extras
      * @return true if the poster was downloaded
      */
-    private boolean loadImage(String posterUrl, RemoteService service) {
+    private boolean loadImage(String posterUrl, final RemoteService service) {
         try {
             URL url = new URL(posterUrl);
             URLConnection connection = url.openConnection();
             connection.setReadTimeout(30000); // 30 sec
 
-            int contentLength = connection.getContentLength();
-            ByteArrayOutputStream output = new ByteArrayOutputStream(Math.max(5 * 1024, contentLength)); // 5kB
-
-            InputStream input = connection.getInputStream();
-
-            Bitmap bitmap = null;
-            try {
+            final Bitmap bitmap;
+            try (InputStream input = connection.getInputStream()) {
                 bitmap = BitmapFactory.decodeStream(input);
-            } finally {
-                input.close();
             }
 
             if(bitmap != null) {
-                setPoster(service, new BitmapDrawable(service.getResources(), bitmap));
+                this.poster = new BitmapDrawable(service.getResources(), bitmap);
                 return true;
             }
         } catch(Exception ex) {

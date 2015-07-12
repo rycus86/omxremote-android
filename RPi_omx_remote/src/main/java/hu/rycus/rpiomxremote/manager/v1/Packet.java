@@ -1,4 +1,4 @@
-package hu.rycus.rpiomxremote.manager;
+package hu.rycus.rpiomxremote.manager.v1;
 
 import java.net.SocketAddress;
 

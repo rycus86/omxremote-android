@@ -1,29 +1,25 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.+'
-    }
-}
-apply plugin: 'android'
-
-repositories {
-    mavenCentral()
-}
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.1.1"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 18
+        minSdkVersion 21
+        targetSdkVersion 22
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
     }
 }
 
 dependencies {
-	compile 'com.android.support:appcompat-v7:18.0.0'
-	compile 'com.android.support:support-v4:18.0.0'
-	compile 'com.android.support:gridlayout-v7:18.0.+'
+	compile 'com.android.support:appcompat-v7:22.2.0'
+	compile 'com.android.support:support-v4:22.2.0'
+	compile 'com.android.support:gridlayout-v7:22.2.0'
+
+    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.5.4'
 }

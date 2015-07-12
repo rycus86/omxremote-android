@@ -23,18 +23,21 @@ public class Setting implements Parcelable {
     }
 
     /** The setting key (as defined in omxplayer). */
-    private final String key;
+    private String key;
     /** The description of the setting. */
-    private final String description;
+    private String description;
     /**
      * The possible values for the setting separated by comma.
      * Only valid for enumerated value types.
      */
-    private final String possibleValues;
+    private String possibleValues;
     /** The type of the setting. */
-    private final Type type;
+    private Type type;
     /** The current value of the setting. */
     private String value;
+
+    // For JSON deserialization
+    private Setting() { }
 
     /**
      * Public constructor to create an instance from values

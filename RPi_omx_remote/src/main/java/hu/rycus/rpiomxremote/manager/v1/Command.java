@@ -1,4 +1,4 @@
-package hu.rycus.rpiomxremote.manager;
+package hu.rycus.rpiomxremote.manager.v1;
 
 /**
  * An object containing the data to send to the server.

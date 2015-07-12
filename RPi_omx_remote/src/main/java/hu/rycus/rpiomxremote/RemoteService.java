@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import hu.rycus.rpiomxremote.manager.PlayerState;
 import hu.rycus.rpiomxremote.manager.RemoteManager;
-import hu.rycus.rpiomxremote.util.Header;
+import hu.rycus.rpiomxremote.manager.v2.RestRemoteManager;
 
 /**
  * Remote service responsible for background tasks
@@ -45,7 +45,7 @@ public class RemoteService extends Service {
         startStopLock.lock();
         try {
             if(remoteManager == null) {
-                remoteManager = RemoteManager.start(this);
+                remoteManager = RestRemoteManager.start(this);
             }
         } finally {
             startStopLock.unlock();
@@ -120,56 +120,56 @@ public class RemoteService extends Service {
     /** Sends a toggle play/pause command to the remote player. */
     public void playPause() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_PAUSE, null);
+            remoteManager.ctrlPlayPause();
         }
     }
 
     /** Sends a set volume command to the remote player. */
     public void setVolume(long volume) {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SET_VOLUME, Long.toString(volume));
+            remoteManager.ctrlVolume(volume);
         }
     }
 
     /** Sends a seek playback position command to the remote player. */
     public void seekPlayer(long positionInMillis) {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SEEK_TO, Long.toString(positionInMillis));
+            remoteManager.ctrlSeek(positionInMillis);
         }
     }
 
     /** Sends an increase speed command to the remote player. */
     public void increaseSpeed() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SPEED_INC, null);
+            remoteManager.ctrlIncreaseSpeed();
         }
     }
 
     /** Sends a decrease speed command to the remote player. */
     public void decreaseSpeed() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SPEED_DEC, null);
+            remoteManager.ctrlDecreaseSpeed();
         }
     }
 
     /** Sends an increase subtitle delay command to the remote player. */
     public void increaseSubtitleDelay() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SUB_DELAY_INC, null);
+            remoteManager.ctrlIncreaseSubtitleDelay();
         }
     }
 
     /** Sends a decrease subtitle delay command to the remote player. */
     public void decreaseSubtitleDelay() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SUB_DELAY_DEC, null);
+            remoteManager.ctrlDecreaseSubtitleDelay();
         }
     }
 
     /** Sends a toggle subtitle visibility command to the remote player. */
     public void toggleSubtitleVisibility() {
         if(remoteManager != null) {
-            remoteManager.sendPlayerCommand(Header.MSG_A_SUB_TOGGLE, null);
+            remoteManager.ctrlToggleSubtitleVisibility();
         }
     }
 

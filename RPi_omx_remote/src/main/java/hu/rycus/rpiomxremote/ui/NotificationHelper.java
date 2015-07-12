@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import hu.rycus.rpiomxremote.PlayerActivity;
@@ -53,7 +54,6 @@ public class NotificationHelper extends BroadcastReceiver {
 
     /** Posts a notification for the remote service with the given player state. */
     public static void postNotification(RemoteService service, PlayerState state) {
-
         if(userCancelled) return;
 
         if(!rsc.isBindRequested()) {
@@ -126,8 +126,12 @@ public class NotificationHelper extends BroadcastReceiver {
             }
         }
 
-        service.startForeground(NOTIFICATION_ID, notification);
-        PlayerMediaReceiver.activate(service, state);
+        try {
+            service.startForeground(NOTIFICATION_ID, notification);
+            PlayerMediaReceiver.activate(service, state);
+        } catch (IllegalStateException ex) {
+            Log.w("Notification", "Failed to post new notification", ex);
+        }
     }
 
     /** Cancels the notification. */

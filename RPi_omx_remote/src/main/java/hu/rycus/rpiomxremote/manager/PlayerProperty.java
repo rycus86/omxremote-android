@@ -3,9 +3,7 @@ package hu.rycus.rpiomxremote.manager;
 import android.content.res.Resources;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +42,14 @@ public class PlayerProperty {
     private static Map<String, PlayerProperty> byId = null;
 
     /** The identifier of the property. */
-    private final String id;
+    private String id;
     /** The name of the property. */
-    private final String name;
+    private String name;
     /** The type of the property. */
-    private final Type type;
+    private Type type;
+
+    // For JSON deserialization
+    private PlayerProperty() { }
 
     /**
      * Private constructor assigning all local variables.
