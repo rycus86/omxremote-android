@@ -5,8 +5,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.support.v4.app.NotificationCompat;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -37,11 +37,6 @@ public class NotificationHelper extends BroadcastReceiver {
     /** Identifier for the volume up button in the notification. */
     private static final String BTN_VOLUME_UP   = "vol+";
 
-    /** The notification builder used to create the notification. */
-    private static NotificationCompat.Builder builder = null;
-    /** The remote views used on the expanded notification. */
-    private static RemoteViews remoteViews = null;
-
     /**
      * Did the user clear the notification?
      * (Since the notification is started as a service's foreground notification
@@ -60,71 +55,61 @@ public class NotificationHelper extends BroadcastReceiver {
             rsc.bind(service);
         }
 
-        if(builder == null) {
-            builder = new NotificationCompat.Builder(service);
-            builder.setOnlyAlertOnce(true);
-            builder.setSmallIcon(R.drawable.ic_notification);
+        final Notification.Builder builder = new Notification.Builder(service);
+        builder.setOnlyAlertOnce(true);
+        builder.setSmallIcon(R.drawable.ic_notification);
+        builder.setColor(0xFFFF0000);
 
-            Intent deleteIntent = new Intent(Intents.ACTION_NOTIFICATION_DELETED);
-            builder.setDeleteIntent(PendingIntent.getBroadcast(service, 1, deleteIntent, 0));
+        Intent deleteIntent = new Intent(Intents.ACTION_NOTIFICATION_DELETED);
+        builder.setDeleteIntent(PendingIntent.getBroadcast(service, 1, deleteIntent, 0));
 
-            Intent contentIntent = new Intent(service, PlayerActivity.class);
-            contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VIDEO_FILE, state.getVideofile());
-            contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_DURATION,   state.getDuration());
-            contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VOLUME,     state.getVolume());
-            PendingIntent pendingContentIntent = PendingIntent.getActivity(service, 2, contentIntent, 0);
-            builder.setContentIntent(pendingContentIntent);
-        }
-
-        Notification notification = builder.build();
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            if(remoteViews == null) {
-                remoteViews = new RemoteViews(service.getPackageName(), R.layout.notification_player);
-
-                Intent contentIntent = new Intent(service, PlayerActivity.class);
-                contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VIDEO_FILE, state.getVideofile());
-                contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_DURATION,   state.getDuration());
-                contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VOLUME,     state.getVolume());
-                PendingIntent pendingContentIntent = PendingIntent.getActivity(service, 2, contentIntent, 0);
-                remoteViews.setOnClickPendingIntent(R.id.notif_image, pendingContentIntent);
-
-                Intent pauseIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-                pauseIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_PAUSE);
-                remoteViews.setOnClickPendingIntent(R.id.notif_btn_pause,
-                        PendingIntent.getBroadcast(service, 3, pauseIntent, 0));
-
-                Intent volumeDownIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-                volumeDownIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_DOWN);
-                remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_down,
-                        PendingIntent.getBroadcast(service, 4, volumeDownIntent, 0));
-
-                Intent volumeUpIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-                volumeUpIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_UP);
-                remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_up,
-                        PendingIntent.getBroadcast(service, 5, volumeUpIntent, 0));
-            }
-
-            notification.bigContentView = remoteViews;
-        }
+        Intent contentIntent = new Intent(service, PlayerActivity.class);
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VIDEO_FILE, state.getVideofile());
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_DURATION, state.getDuration());
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VOLUME, state.getVolume());
+        PendingIntent pendingContentIntent = PendingIntent.getActivity(service, 2, contentIntent, 0);
+        builder.setContentIntent(pendingContentIntent);
 
         builder.setContentTitle(state.getTitle());
         builder.setContentText(state.getInfo());
+        builder.setSubText(state.getExtra());
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            remoteViews.setTextViewText(R.id.notif_title, state.getTitle());
-            remoteViews.setTextViewText(R.id.notif_info, state.getInfo());
-            remoteViews.setTextViewText(R.id.notif_extra, state.getExtra());
+        Notification notification = builder.build();
 
-            remoteViews.setImageViewResource(R.id.notif_btn_pause,
-                    state.isPaused() ?
+        final RemoteViews remoteViews =
+                new RemoteViews(service.getPackageName(), R.layout.notification_player);
+
+        remoteViews.setOnClickPendingIntent(R.id.notif_image, pendingContentIntent);
+
+        Intent pauseIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
+        pauseIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_PAUSE);
+        remoteViews.setOnClickPendingIntent(R.id.notif_btn_pause,
+                PendingIntent.getBroadcast(service, 3, pauseIntent, 0));
+
+        Intent volumeDownIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
+        volumeDownIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_DOWN);
+        remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_down,
+                PendingIntent.getBroadcast(service, 4, volumeDownIntent, 0));
+
+        Intent volumeUpIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
+        volumeUpIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_UP);
+        remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_up,
+                PendingIntent.getBroadcast(service, 5, volumeUpIntent, 0));
+
+        remoteViews.setTextViewText(R.id.notif_title, state.getTitle());
+        remoteViews.setTextViewText(R.id.notif_info, state.getInfo());
+        remoteViews.setTextViewText(R.id.notif_extra, state.getExtra());
+
+        remoteViews.setImageViewResource(R.id.notif_btn_pause,
+                state.isPaused() ?
                         R.drawable.ic_notif_play :
                         R.drawable.ic_notif_pause);
 
-            if(state.getPoster() != null) {
-                remoteViews.setImageViewBitmap(R.id.notif_image, state.getPoster().getBitmap());
-            }
+        if(state.getPoster() != null) {
+            remoteViews.setImageViewBitmap(R.id.notif_image, state.getPoster().getBitmap());
         }
+
+        notification.bigContentView = remoteViews;
 
         try {
             service.startForeground(NOTIFICATION_ID, notification);
@@ -134,15 +119,62 @@ public class NotificationHelper extends BroadcastReceiver {
         }
     }
 
+    // TODO
+    private MediaSession createSession(final RemoteService service) {
+        final MediaSession session = new MediaSession(service, "RPiMediaSession");
+        session.setCallback(new MediaSession.Callback() {
+            @Override
+            public void onPlay() {
+                super.onPlay();
+            }
+
+            @Override
+            public void onPause() {
+                super.onPause();
+            }
+
+            @Override
+            public void onSkipToNext() {
+                super.onSkipToNext();
+            }
+
+            @Override
+            public void onSkipToPrevious() {
+                super.onSkipToPrevious();
+            }
+
+            @Override
+            public void onFastForward() {
+                super.onFastForward();
+            }
+
+            @Override
+            public void onRewind() {
+                super.onRewind();
+            }
+        });
+
+        session.setActive(true);
+
+        final PlaybackState playbackState = new PlaybackState.Builder()
+                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE |
+                        PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS |
+                        PlaybackState.ACTION_FAST_FORWARD | PlaybackState.ACTION_REWIND)
+                .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
+                .build();
+
+        session.setPlaybackState(playbackState);
+
+        return session;
+    }
+
     /** Cancels the notification. */
     public static void cancel(RemoteService service) {
         rsc.unbind(service);
 
-        PlayerMediaReceiver.deactivate(service);
+        // PlayerMediaReceiver.deactivate(service);
         service.stopForeground(true);
 
-        builder = null;
-        remoteViews = null;
         userCancelled = false;
     }
 

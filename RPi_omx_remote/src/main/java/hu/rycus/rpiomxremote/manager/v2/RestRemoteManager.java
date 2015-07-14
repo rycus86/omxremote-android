@@ -250,7 +250,11 @@ public class RestRemoteManager implements RemoteManager, Runnable {
 
             @Override
             protected void onPostExecute(final PlayerState state) {
-                onNewPlayerStarted(state);
+                if (state != null) {
+                    onNewPlayerStarted(state);
+                } else {
+                    Log.e(LOG_TAG, String.format("Failed to start video at %s", videoPath));
+                }
             }
         }.execute();
     }
@@ -549,6 +553,8 @@ public class RestRemoteManager implements RemoteManager, Runnable {
     private void onPlayerStateUpdated(final PlayerState newState) {
         final PlayerState state = playerState.get();
 
+        final boolean stateUpdated = state.isPaused() != newState.isPaused();
+
         state.setPosition(newState.getPosition());
         state.setVolume(newState.getVolume());
         state.setPaused(newState.isPaused());
@@ -556,6 +562,10 @@ public class RestRemoteManager implements RemoteManager, Runnable {
         Intent response = new Intent(Intents.ACTION_CALLBACK);
         response.putExtra(Intents.EXTRA_PLAYER_REPORT, Intents.EXTRA_PLAYER_REPORT_INFO);
         LocalBroadcastManager.getInstance(service).sendBroadcast(response);
+
+        if (stateUpdated) {
+            NotificationHelper.postNotification(service, state);
+        }
     }
 
     private void startPlayerStateRefreshThread() {

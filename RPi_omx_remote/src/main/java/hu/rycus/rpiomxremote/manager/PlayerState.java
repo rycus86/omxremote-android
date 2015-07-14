@@ -79,10 +79,12 @@ public class PlayerState {
     public void processExtras(final RemoteService remoteService) {
         PlayerProperty.initialize(remoteService.getResources());
 
-        for (final String id : extras.keySet()) {
-            final PlayerProperty property = PlayerProperty.get(id);
-            if (property != null) {
-                properties.put(property, extras.get(id));
+        if (extras != null) {
+            for (final String id : extras.keySet()) {
+                final PlayerProperty property = PlayerProperty.get(id);
+                if (property != null) {
+                    properties.put(property, extras.get(id));
+                }
             }
         }
 
