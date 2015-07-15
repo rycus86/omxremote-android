@@ -225,6 +225,10 @@ public class RestRemoteManager implements RemoteManager, Runnable {
 
     @Override
     public void startPlayer(final String videoPath, final String subtitlePath) {
+        if (playerState.get() != null) {
+            stopPlayer();
+        }
+
         new RestTask<PlayerState>() {
             @Override
             protected HttpRequestBaseHC4 prepareRequest() throws Exception {
@@ -574,6 +578,8 @@ public class RestRemoteManager implements RemoteManager, Runnable {
                 Log.d(LOG_TAG, "Refresh thread is already running");
                 return;
             }
+
+            Log.i(LOG_TAG, "Starting player state refresh thread");
 
             playerStateRefreshThread = new Thread("PlayerState") {
                 @Override

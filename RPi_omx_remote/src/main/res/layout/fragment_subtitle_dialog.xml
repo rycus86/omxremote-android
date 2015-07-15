@@ -28,6 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/sub_txt_info"
         android:layout_toStartOf="@id/sub_btn_search"
+        android:singleLine="true"
         android:hint="@string/sub_query_hint"/>
 
     <ProgressBar

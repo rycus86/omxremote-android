@@ -5,10 +5,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.session.MediaSession;
-import android.media.session.PlaybackState;
-import android.util.Log;
-import android.widget.RemoteViews;
+import android.graphics.BitmapFactory;
+
+import java.util.concurrent.TimeUnit;
 
 import hu.rycus.rpiomxremote.PlayerActivity;
 import hu.rycus.rpiomxremote.R;
@@ -32,150 +31,96 @@ public class NotificationHelper extends BroadcastReceiver {
 
     /** Identifier for the pause button in the notification. */
     private static final String BTN_PAUSE       = "pause";
-    /** Identifier for the volume down button in the notification. */
-    private static final String BTN_VOLUME_DOWN = "vol-";
-    /** Identifier for the volume up button in the notification. */
-    private static final String BTN_VOLUME_UP   = "vol+";
 
-    /**
-     * Did the user clear the notification?
-     * (Since the notification is started as a service's foreground notification
-     * the user shouldn't be able to clear it).
-     */
-    private static boolean userCancelled = false;
+    private static final String BTN_REW_BIG = "rew+big";
+    private static final String BTN_REW_SMALL = "rew+small";
+
+    private static final String BTN_FF_BIG = "ff+big";
+    private static final String BTN_FF_SMALL = "ff+small";
 
     /** Helper object to bind/unbind the remote service. */
     private static final RemoteServiceCreator rsc = new RemoteServiceCreator();
 
-    /** Posts a notification for the remote service with the given player state. */
     public static void postNotification(RemoteService service, PlayerState state) {
-        if(userCancelled) return;
-
         if(!rsc.isBindRequested()) {
             rsc.bind(service);
         }
 
-        final Notification.Builder builder = new Notification.Builder(service);
-        builder.setOnlyAlertOnce(true);
-        builder.setSmallIcon(R.drawable.ic_notification);
-        builder.setColor(0xFFFF0000);
+        final Notification.Builder builder = new Notification.Builder(service)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setColor(0xFFAA0000)
+                .setShowWhen(false)
+                .setContentTitle(state.getTitle())
+                .setContentText(state.getInfo())
+                .setSubText(state.getExtra())
+                .setContentIntent(createActivityPendingIntent(service, state));
 
-        Intent deleteIntent = new Intent(Intents.ACTION_NOTIFICATION_DELETED);
-        builder.setDeleteIntent(PendingIntent.getBroadcast(service, 1, deleteIntent, 0));
-
-        Intent contentIntent = new Intent(service, PlayerActivity.class);
-        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VIDEO_FILE, state.getVideofile());
-        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_DURATION, state.getDuration());
-        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VOLUME, state.getVolume());
-        PendingIntent pendingContentIntent = PendingIntent.getActivity(service, 2, contentIntent, 0);
-        builder.setContentIntent(pendingContentIntent);
-
-        builder.setContentTitle(state.getTitle());
-        builder.setContentText(state.getInfo());
-        builder.setSubText(state.getExtra());
-
-        Notification notification = builder.build();
-
-        final RemoteViews remoteViews =
-                new RemoteViews(service.getPackageName(), R.layout.notification_player);
-
-        remoteViews.setOnClickPendingIntent(R.id.notif_image, pendingContentIntent);
-
-        Intent pauseIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-        pauseIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_PAUSE);
-        remoteViews.setOnClickPendingIntent(R.id.notif_btn_pause,
-                PendingIntent.getBroadcast(service, 3, pauseIntent, 0));
-
-        Intent volumeDownIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-        volumeDownIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_DOWN);
-        remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_down,
-                PendingIntent.getBroadcast(service, 4, volumeDownIntent, 0));
-
-        Intent volumeUpIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
-        volumeUpIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, BTN_VOLUME_UP);
-        remoteViews.setOnClickPendingIntent(R.id.notif_btn_volume_up,
-                PendingIntent.getBroadcast(service, 5, volumeUpIntent, 0));
-
-        remoteViews.setTextViewText(R.id.notif_title, state.getTitle());
-        remoteViews.setTextViewText(R.id.notif_info, state.getInfo());
-        remoteViews.setTextViewText(R.id.notif_extra, state.getExtra());
-
-        remoteViews.setImageViewResource(R.id.notif_btn_pause,
-                state.isPaused() ?
-                        R.drawable.ic_notif_play :
-                        R.drawable.ic_notif_pause);
-
-        if(state.getPoster() != null) {
-            remoteViews.setImageViewBitmap(R.id.notif_image, state.getPoster().getBitmap());
+        if (state.getPoster() != null) {
+            builder.setLargeIcon(state.getPoster().getBitmap());
+        } else {
+            builder.setLargeIcon(
+                    BitmapFactory.decodeResource(
+                            service.getResources(), R.drawable.ic_launcher));
         }
 
-        notification.bigContentView = remoteViews;
+        builder.addAction(new Notification.Action(
+                android.R.drawable.ic_media_previous, null,
+                createControlPendingIntent(service, BTN_REW_BIG, 0x21)));
 
-        try {
-            service.startForeground(NOTIFICATION_ID, notification);
-            PlayerMediaReceiver.activate(service, state);
-        } catch (IllegalStateException ex) {
-            Log.w("Notification", "Failed to post new notification", ex);
+        builder.addAction(new Notification.Action(
+                android.R.drawable.ic_media_rew, null,
+                createControlPendingIntent(service, BTN_REW_SMALL, 0x22)));
+
+        builder.addAction(new Notification.Action(
+                getPlayPauseIcon(state), null,
+                createControlPendingIntent(service, BTN_PAUSE, 0x10)));
+
+        builder.addAction(new Notification.Action(
+                android.R.drawable.ic_media_ff, null,
+                createControlPendingIntent(service, BTN_FF_SMALL, 0x31)));
+
+        builder.addAction(new Notification.Action(
+                android.R.drawable.ic_media_next, null,
+                createControlPendingIntent(service, BTN_FF_BIG, 0x32)));
+
+        builder.setStyle(new Notification.MediaStyle()
+                .setShowActionsInCompactView(2));
+
+        final Notification notification = builder.build();
+
+        service.startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private static int getPlayPauseIcon(final PlayerState state) {
+        if (state.isPaused()) {
+            return android.R.drawable.ic_media_play;
+        } else {
+            return android.R.drawable.ic_media_pause;
         }
     }
 
-    // TODO
-    private MediaSession createSession(final RemoteService service) {
-        final MediaSession session = new MediaSession(service, "RPiMediaSession");
-        session.setCallback(new MediaSession.Callback() {
-            @Override
-            public void onPlay() {
-                super.onPlay();
-            }
+    private static PendingIntent createActivityPendingIntent(
+            final Context context, final PlayerState state) {
 
-            @Override
-            public void onPause() {
-                super.onPause();
-            }
+        final Intent contentIntent = new Intent(context, PlayerActivity.class);
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VIDEO_FILE, state.getVideofile());
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_DURATION, state.getDuration());
+        contentIntent.putExtra(PlayerFragment.EXTRA_PLAYER_VOLUME, state.getVolume());
+        return PendingIntent.getActivity(context, 0x01, contentIntent, 0);
+    }
 
-            @Override
-            public void onSkipToNext() {
-                super.onSkipToNext();
-            }
+    private static PendingIntent createControlPendingIntent(
+            final Context context, final String buttonId, final int requestCode) {
 
-            @Override
-            public void onSkipToPrevious() {
-                super.onSkipToPrevious();
-            }
-
-            @Override
-            public void onFastForward() {
-                super.onFastForward();
-            }
-
-            @Override
-            public void onRewind() {
-                super.onRewind();
-            }
-        });
-
-        session.setActive(true);
-
-        final PlaybackState playbackState = new PlaybackState.Builder()
-                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE |
-                        PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS |
-                        PlaybackState.ACTION_FAST_FORWARD | PlaybackState.ACTION_REWIND)
-                .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
-                .build();
-
-        session.setPlaybackState(playbackState);
-
-        return session;
+        final Intent controlIntent = new Intent(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED);
+        controlIntent.putExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID, buttonId);
+        return PendingIntent.getBroadcast(context, requestCode, controlIntent, 0);
     }
 
     /** Cancels the notification. */
     public static void cancel(RemoteService service) {
         rsc.unbind(service);
-
-        // PlayerMediaReceiver.deactivate(service);
         service.stopForeground(true);
-
-        userCancelled = false;
     }
 
     /**
@@ -186,26 +131,31 @@ public class NotificationHelper extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(Intents.ACTION_NOTIFICATION_DELETED.equals(intent.getAction())) {
-            userCancelled = true;
-        } else if(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED.equals(intent.getAction())) {
-            RemoteService service = rsc.isServiceBound() ? rsc.getService() : null;
+        if(Intents.ACTION_NOTIFICATION_BUTTON_CLICKED.equals(intent.getAction())) {
+            final RemoteService service = rsc.isServiceBound() ? rsc.getService() : null;
             if(service == null) return;
 
-            String button = intent.getStringExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID);
+            final String button = intent.getStringExtra(Intents.EXTRA_NOTIFICATION_BUTTON_ID);
             if(BTN_PAUSE.equals(button)) {
                 service.playPause();
-            } else if(BTN_VOLUME_DOWN.equals(button)) {
-                PlayerState state = service.getPlayerState();
-                if(state != null) {
-                    service.setVolume(state.getVolume() - 1L);
-                }
-            } else if(BTN_VOLUME_UP.equals(button)) {
-                PlayerState state = service.getPlayerState();
-                if(state != null) {
-                    service.setVolume(state.getVolume() + 1L);
-                }
+            } else if(BTN_REW_BIG.equals(button)) {
+                jump(service, -TimeUnit.MINUTES.toMillis(3));
+            } else if(BTN_REW_SMALL.equals(button)) {
+                jump(service, -TimeUnit.SECONDS.toMillis(15));
+            } else if(BTN_FF_SMALL.equals(button)) {
+                jump(service, TimeUnit.SECONDS.toMillis(15));
+            } else if(BTN_FF_BIG.equals(button)) {
+                jump(service, TimeUnit.MINUTES.toMillis(3));
             }
+        }
+    }
+
+    private void jump(final RemoteService service, final long relative) {
+        final PlayerState state = service.getPlayerState();
+        if(state != null) {
+            final long position = state.getPosition();
+            final long jumpPosition = Math.max(0, Math.min(position + relative, state.getDuration()));
+            service.seekPlayer(jumpPosition);
         }
     }
 
