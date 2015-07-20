@@ -430,13 +430,29 @@ public class FileListFragment extends Fragment {
 
     /** Sets the file list to display. */
     public void setFiles(FileList files) {
+        final String oldPath = current != null ? current.getPath() : null;
+        final String newPath = files.getPath();
+
         current = files;
 
         txtCurrentPath.setText(files.getPath());
         txtCurrentPath.setVisibility(View.VISIBLE);
 
-        fileList.scrollTo(0, 0);
         fileListAdapter.setItems(files);
+
+        if (oldPath != null) {
+            if (oldPath.length() < newPath.length()) {
+                fileList.setSelection(0);
+            } else {
+                final String name = oldPath.substring(oldPath.lastIndexOf('/') + 1) + '/';
+                final int position = fileListAdapter.indexOf(name);
+                if (position > -1) {
+                    fileList.setSelection(Math.max(0, position - 1));
+                } else {
+                    fileList.setSelection(0);
+                }
+            }
+        }
     }
 
     @Override
